@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(./gradlew:*)"
+    ],
+    "deny": []
+  }
+}
