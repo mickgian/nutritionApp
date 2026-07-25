@@ -11,6 +11,9 @@ class AvailabilityRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
+    def get_by_id(self, slot_id: int) -> AvailabilitySlot | None:
+        return self.session.get(AvailabilitySlot, slot_id)
+
     def get_by_starts_at(self, starts_at: datetime) -> AvailabilitySlot | None:
         stmt = select(AvailabilitySlot).where(AvailabilitySlot.starts_at == starts_at)
         return self.session.exec(stmt).first()

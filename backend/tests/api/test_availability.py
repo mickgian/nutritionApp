@@ -103,7 +103,7 @@ def test_cannot_close_slot_held_by_appointment(
         client_id=owner.id,
         visit_type=VisitType.prima,
         scheduled_at=datetime.now(UTC) + timedelta(days=3),
-        price_eur=90,
+        price_cents=9000,
     )
     session.add(appt)
     session.commit()

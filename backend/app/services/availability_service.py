@@ -9,6 +9,7 @@ from datetime import UTC, date, datetime, time
 import structlog
 from fastapi import HTTPException, status
 
+from app.core.timeutils import to_utc
 from app.models.availability import AvailabilitySlot
 from app.repositories.availability_repository import AvailabilityRepository
 from app.schemas.availability import AvailabilityUpsertRequest
@@ -16,19 +17,12 @@ from app.schemas.availability import AvailabilityUpsertRequest
 logger = structlog.get_logger(__name__)
 
 
-def _as_utc(dt: datetime) -> datetime:
-    """Normalize to timezone-aware UTC (naive input is assumed to be UTC)."""
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=UTC)
-    return dt.astimezone(UTC)
-
-
 class AvailabilityService:
     def __init__(self, repo: AvailabilityRepository) -> None:
         self.repo = repo
 
     def upsert(self, data: AvailabilityUpsertRequest, actor_id: int) -> AvailabilitySlot:
-        starts_at = _as_utc(data.starts_at)
+        starts_at = to_utc(data.starts_at)
         existing = self.repo.get_by_starts_at(starts_at)
 
         if existing is None:

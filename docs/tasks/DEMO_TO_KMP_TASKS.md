@@ -107,7 +107,7 @@ in `TokenStorage`; attach it to authorized requests; handle 401 → back to logi
 **Change:** ADDITIVE. **Edge:** past dates rejected; double-booking prevented (409).
 **Acceptance:** admin can open/close slots; non-admin gets 403; migration reversible.
 
-### DEV-021: Appointment booking backend
+### DEV-021: Appointment booking backend — ✅ Done
 **Problem:** Clients must book a prima visita / controllo on an open slot.
 **Solution:** `GET /api/v1/availability?from=&to=` (open slots), `POST /api/v1/appointments`
 (creates a `pending_payment` appointment on an available slot), `GET /api/v1/appointments`
