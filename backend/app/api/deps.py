@@ -23,13 +23,16 @@ TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
     claims = decode_token(token)
-    if claims is None or "sub" not in claims:
+    subject = claims.get("sub") if claims else None
+    try:
+        user_id = int(subject)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenziali non valide",
             headers={"WWW-Authenticate": "Bearer"},
-        )
-    user = session.get(User, int(claims["sub"]))
+        ) from None
+    user = session.get(User, user_id)
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utente non trovato")
     return user

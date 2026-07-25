@@ -74,7 +74,7 @@ indexes, ownership columns, and money-as-cents; record it as an ADR.
 
 ## Epic 1 — Authentication & profile
 
-### DEV-010: Auth backend (register / login / me)
+### DEV-010: Auth backend (register / login / me) — ✅ Done
 **Problem:** The client has login/registration screens but no real backend.
 **Solution:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login` (returns JWT),
 `GET /api/v1/auth/me`. Passwords hashed (bcrypt); tokens via `create_access_token`.
