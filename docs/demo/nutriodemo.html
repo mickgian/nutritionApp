@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Meridia Nutrizione — Demo App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#17402F;         /* primario, bosco */
+  --verde-scuro:#0E2B1F;
+  --salvia:#E4EEE4;        /* superfici tinte */
+  --lime:#C9E265;          /* badge / evidenze */
+  --panna:#F7F8F3;         /* sfondo app */
+  --bianco:#FFFFFF;
+  --inchiostro:#1A241E;
+  --grigio:#6B7A70;
+  --linea:#DDE6DD;
+  --arancio:#D96C3B;       /* solo per avvisi/scadenze */
+  --r-lg:22px; --r-md:16px; --r-sm:10px;
+  --display:'Bricolage Grotesque', system-ui, sans-serif;
+  --body:'Instrument Sans', system-ui, sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--body); color:var(--inchiostro);
+  background:#10241A;
+  background-image:radial-gradient(1200px 600px at 70% -10%, #1E4A35 0%, transparent 60%);
+  display:flex; align-items:center; justify-content:center; min-height:100vh;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+
+/* ---------- cornice telefono ---------- */
+.stage{display:flex;gap:40px;align-items:center;padding:32px}
+.side-note{max-width:260px;color:#CFE2D3;font-size:13px;line-height:1.6;display:none}
+.side-note h1{font-family:var(--display);font-weight:800;font-size:22px;color:#fff;margin-bottom:10px;letter-spacing:-.02em}
+.side-note .tip{margin-top:14px;padding:12px 14px;border:1px solid #2E5A42;border-radius:12px;background:rgba(255,255,255,.04)}
+.phone{
+  width:390px;height:820px;background:var(--panna);border-radius:44px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 10px #0B1A12,0 0 0 12px #2A4636;
+  position:relative;display:flex;flex-direction:column;
+}
+@media(min-width:900px){ .side-note{display:block} }
+@media(max-width:520px){
+  body{background:var(--panna)}
+  .stage{padding:0;width:100%;height:100dvh}
+  .phone{width:100%;height:100dvh;border-radius:0;box-shadow:none}
+}
+
+/* ---------- struttura app ---------- */
+.screens{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;padding:20px 18px 110px;display:none;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{display:block;animation:fadeIn .22s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.tabbar{
+  position:absolute;bottom:0;left:0;right:0;height:84px;background:var(--bianco);
+  border-top:1px solid var(--linea);display:flex;z-index:40;padding-bottom:14px;
+}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--grigio)}
+.tab svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tab.active{color:var(--verde)}
+.tab .dot{position:absolute;transform:translate(11px,-15px);width:8px;height:8px;border-radius:50%;background:var(--arancio);display:none}
+.tab.has-dot .dot{display:block}
+
+/* ---------- componenti ---------- */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--verde);opacity:.75}
+h2.title{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.02em;line-height:1.12;margin:4px 0 14px}
+.card{background:var(--bianco);border:1px solid var(--linea);border-radius:var(--r-lg);padding:18px;margin-bottom:14px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;border-radius:14px;font-weight:700;font-size:15px;transition:transform .1s}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--verde);color:#fff}
+.btn-ghost{background:var(--salvia);color:var(--verde)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--lime);color:var(--verde-scuro);font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:99px}
+.chip.warn{background:#FBE3D6;color:#9C4A21}
+.muted{color:var(--grigio);font-size:13px;line-height:1.55}
+.row{display:flex;align-items:center;gap:12px}
+.spread{display:flex;align-items:center;justify-content:space-between}
+.hr{height:1px;background:var(--linea);margin:14px 0}
+
+/* topbar dell'app */
+.appbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .leaf{width:38px;height:38px;border-radius:12px;background:var(--verde);display:grid;place-items:center;color:var(--lime);font-size:19px}
+.brand b{font-family:var(--display);font-size:17px;letter-spacing:-.01em}
+.brand small{display:block;font-size:10.5px;color:var(--grigio);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.avatar-mini{width:38px;height:38px;border-radius:50%;background:var(--salvia);display:grid;place-items:center;font-weight:700;color:var(--verde);font-size:14px;border:1px solid var(--linea)}
+
+/* hero home */
+.hero{background:var(--verde);color:#fff;border-radius:var(--r-lg);padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(201,226,101,.18)}
+.hero h3{font-family:var(--display);font-weight:800;font-size:22px;line-height:1.15;letter-spacing:-.02em;margin:8px 0 6px}
+.hero p{font-size:13px;opacity:.85;line-height:1.5;max-width:280px}
+.hero .btn{margin-top:16px;background:var(--lime);color:var(--verde-scuro);width:auto;padding:12px 18px}
+
+/* professionista */
+.pro{display:flex;gap:14px;align-items:center}
+.pro-photo{
+  width:76px;height:76px;border-radius:24px;flex:none;
+  background:linear-gradient(145deg,#2F6A4C,#17402F);
+  display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:800;font-size:24px;
+  border:3px solid var(--lime);
+}
+.stars{color:#E8A93C;font-size:13px;letter-spacing:2px}
+.review{border-left:3px solid var(--lime);padding:2px 0 2px 12px;margin-top:12px}
+.review p{font-size:13px;line-height:1.5}
+.review small{color:var(--grigio);font-weight:600}
+
+/* listino */
+.price-opt{display:flex;justify-content:space-between;align-items:center;padding:14px;border:1.5px solid var(--linea);border-radius:var(--r-md);margin-top:10px;cursor:pointer;background:var(--bianco)}
+.price-opt.sel{border-color:var(--verde);background:var(--salvia)}
+.price-opt .p{font-family:var(--display);font-weight:800;font-size:20px;color:var(--verde)}
+.price-opt small{color:var(--grigio);font-size:12px}
+
+/* calendario */
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0 10px}
+.cal-head b{font-size:14px;text-transform:capitalize}
+.cal-nav{width:34px;height:34px;border-radius:10px;background:var(--salvia);color:var(--verde);font-size:16px;font-weight:700}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.cal-grid .dow{font-size:10px;font-weight:700;color:var(--grigio);text-transform:uppercase;padding:4px 0}
+.day{aspect-ratio:1;display:grid;place-items:center;border-radius:11px;font-size:13.5px;font-weight:600;color:#B9C4BC}
+.day.av{color:var(--inchiostro);background:var(--salvia);cursor:pointer}
+.day.av:hover{background:#D3E4D3}
+.day.sel{background:var(--verde);color:#fff}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.slot{padding:11px 0;text-align:center;border:1.5px solid var(--linea);border-radius:11px;font-weight:600;font-size:13.5px;background:var(--bianco);cursor:pointer}
+.slot.sel{border-color:var(--verde);background:var(--verde);color:#fff}
+
+/* pagamento */
+.paybtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:13px;font-weight:700;font-size:15px;margin-top:10px;border:1.5px solid var(--inchiostro)}
+.paybtn.dark{background:#000;color:#fff;border-color:#000}
+.paybtn.g{background:#fff;color:#1a1a1a}
+.paybtn.card{background:var(--verde);color:#fff;border-color:var(--verde)}
+
+/* wizard overlay */
+.sheet{
+  position:absolute;inset:0;background:var(--panna);z-index:60;display:none;flex-direction:column;
+}
+.sheet.open{display:flex;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.sheet-head{display:flex;align-items:center;gap:12px;padding:18px;border-bottom:1px solid var(--linea);background:var(--bianco)}
+.sheet-head b{font-family:var(--display);font-size:16px}
+.back{width:36px;height:36px;border-radius:11px;background:var(--salvia);color:var(--verde);font-size:17px;font-weight:700}
+.sheet-body{flex:1;overflow-y:auto;padding:18px;scrollbar-width:none}
+.sheet-body::-webkit-scrollbar{display:none}
+.sheet-foot{padding:14px 18px 26px;background:var(--bianco);border-top:1px solid var(--linea)}
+.steps{display:flex;gap:6px;margin-left:auto}
+.steps i{width:22px;height:5px;border-radius:3px;background:var(--linea)}
+.steps i.on{background:var(--verde)}
+
+/* box pasti — griglia settimanale (elemento firma) */
+.week-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none;margin:0 -2px}
+.week-strip::-webkit-scrollbar{display:none}
+.wday{flex:none;width:52px;padding:10px 0;border-radius:14px;text-align:center;background:var(--bianco);border:1.5px solid var(--linea);cursor:pointer}
+.wday b{display:block;font-family:var(--display);font-size:16px}
+.wday small{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--grigio)}
+.wday.sel{background:var(--verde);border-color:var(--verde)}
+.wday.sel b,.wday.sel small{color:#fff}
+.meal{display:flex;gap:13px;background:var(--bianco);border:1px solid var(--linea);border-radius:var(--r-md);padding:12px;margin-bottom:10px;cursor:pointer}
+.meal-ph{width:66px;height:66px;border-radius:14px;flex:none;display:grid;place-items:center;font-size:30px}
+.meal h4{font-size:14.5px;font-weight:700;line-height:1.25}
+.meal .tag{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--verde);opacity:.7}
+.meal .kcal{margin-top:4px;font-size:12px;color:var(--grigio)}
+.macro{display:flex;gap:10px;margin-top:6px}
+.macro span{font-size:11px;font-weight:700;color:var(--verde);background:var(--salvia);padding:2px 8px;border-radius:99px}
+
+/* piani prezzo box */
+.plan-opt{border:1.5px solid var(--linea);border-radius:var(--r-md);padding:14px;margin-top:10px;cursor:pointer;background:var(--bianco);position:relative}
+.plan-opt.sel{border-color:var(--verde);background:var(--salvia)}
+.plan-opt .save{position:absolute;top:-9px;right:12px}
+.deadline{display:flex;gap:10px;align-items:center;background:#FBEFE6;border:1px solid #F0D4BF;border-radius:var(--r-md);padding:12px 14px;margin-bottom:14px}
+.deadline b{color:#9C4A21;font-size:13px}
+.deadline small{color:#B06B41;font-size:11.5px;display:block}
+
+/* notifiche */
+.notif{display:flex;gap:12px;background:var(--bianco);border:1px solid var(--linea);border-radius:var(--r-md);padding:14px;margin-bottom:10px}
+.notif .ic{width:42px;height:42px;border-radius:13px;background:var(--salvia);display:grid;place-items:center;font-size:19px;flex:none}
+.notif b{font-size:13.5px}
+.notif p{font-size:12.5px;color:var(--grigio);line-height:1.45;margin-top:2px}
+.notif small{font-size:10.5px;color:#9AA79E;font-weight:600}
+
+/* stato bloccato box */
+.locked{background:var(--bianco);border:1.5px dashed var(--linea);border-radius:var(--r-lg);padding:28px 20px;text-align:center}
+.locked .big{font-size:42px}
+.locked h3{font-family:var(--display);font-weight:800;font-size:19px;margin:10px 0 6px}
+
+/* toast + conferme */
+.toast{
+  position:absolute;left:16px;right:16px;bottom:100px;background:var(--verde-scuro);color:#fff;
+  padding:14px 16px;border-radius:14px;font-size:13.5px;font-weight:600;z-index:80;display:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.3)
+}
+.toast.show{display:block;animation:fadeIn .2s ease}
+.success-hero{text-align:center;padding:30px 10px}
+.success-hero .ok{width:74px;height:74px;border-radius:50%;background:var(--lime);display:grid;place-items:center;margin:0 auto 16px;font-size:32px}
+.success-hero h3{font-family:var(--display);font-weight:800;font-size:22px;margin-bottom:8px}
+
+/* pannello demo */
+.fab{
+  position:absolute;top:14px;right:14px;z-index:90;background:#0E2B1F;color:var(--lime);
+  border-radius:99px;padding:8px 14px;font-size:11.5px;font-weight:800;letter-spacing:.06em;
+  box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;gap:6px;align-items:center;
+}
+.demo-panel{
+  position:absolute;inset:0;background:rgba(10,22,15,.55);z-index:95;display:none;align-items:flex-end;backdrop-filter:blur(2px)
+}
+.demo-panel.open{display:flex}
+.demo-card{background:#fff;width:100%;border-radius:26px 26px 0 0;padding:22px 20px 34px;animation:slideUp .25s ease}
+.demo-card h3{font-family:var(--display);font-size:17px;margin-bottom:4px}
+.persona{display:flex;gap:12px;padding:13px;border:1.5px solid var(--linea);border-radius:14px;margin-top:10px;cursor:pointer;align-items:center}
+.persona.sel{border-color:var(--verde);background:var(--salvia)}
+.persona .em{font-size:22px}
+.persona b{font-size:14px;display:block}
+.persona small{color:var(--grigio);font-size:12px}
+
+/* admin */
+.admin-badge{background:#0E2B1F;color:var(--lime);font-size:10.5px;font-weight:800;letter-spacing:.08em;padding:4px 10px;border-radius:99px;text-transform:uppercase}
+.avail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}
+.avail{padding:10px 0;text-align:center;border-radius:10px;font-size:12.5px;font-weight:700;border:1.5px solid var(--linea);cursor:pointer;background:#fff}
+.avail.on{background:var(--verde);color:#fff;border-color:var(--verde)}
+.client-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--linea)}
+.client-row:last-child{border:none}
+select{font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 10px;border-radius:10px;border:1.5px solid var(--linea);background:#fff;color:var(--inchiostro)}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="side-note">
+    <h1>Meridia Nutrizione<br>— demo interattiva</h1>
+    <p>Prototipo dell'app cliente (Kotlin Multiplatform, Android + iOS). Tutti i flussi sono navigabili: consulenze, prenotazione, pagamento, box pasti settimanale e notifiche.</p>
+    <div class="tip">💡 Usa il pulsante <b style="color:var(--lime)">DEMO</b> in alto a destra per cambiare scenario cliente o aprire il pannello dello studio.</div>
+  </div>
+
+  <div class="phone">
+    <button class="fab" onclick="openDemo()">⚙ DEMO</button>
+
+    <div class="screens">
+
+      <!-- ============ HOME ============ -->
+      <section class="screen active" id="scr-home">
+        <div class="appbar">
+          <div class="brand">
+            <div class="leaf">✦</div>
+            <div><b>Meridia</b><small>Studio di nutrizione</small></div>
+          </div>
+          <div class="avatar-mini" id="home-avatar">MG</div>
+        </div>
+
+        <div class="hero">
+          <span class="chip">Prima visita · 60 min</span>
+          <h3 id="hero-title">La tua dieta,<br>seguita davvero.</h3>
+          <p id="hero-sub">Consulenza personalizzata con la Dott.ssa Serra e pasti pronti costruiti sul tuo piano alimentare.</p>
+          <button class="btn" onclick="go('consulenza')">Prenota la consulenza →</button>
+        </div>
+
+        <div id="home-next"></div>
+
+        <div class="card" onclick="go('box')" style="cursor:pointer">
+          <div class="spread">
+            <div>
+              <span class="eyebrow">Box settimanale</span>
+              <div style="font-family:var(--display);font-weight:800;font-size:17px;margin-top:3px">14 pasti pronti, sul tuo piano</div>
+              <p class="muted" style="margin-top:4px">Pranzo e cena per 7 giorni. Ritiro in studio ogni lunedì.</p>
+            </div>
+            <div style="font-size:34px">🥗</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Come funziona</span>
+          <div class="hr" style="margin:10px 0"></div>
+          <div class="row" style="margin-bottom:12px"><div style="font-size:20px">🩺</div><div><b style="font-size:14px">1 · Fai la consulenza</b><p class="muted">Prima visita in studio con valutazione completa.</p></div></div>
+          <div class="row" style="margin-bottom:12px"><div style="font-size:20px">📋</div><div><b style="font-size:14px">2 · Ricevi il tuo piano</b><p class="muted">La dottoressa lo associa al tuo profilo nell'app.</p></div></div>
+          <div class="row"><div style="font-size:20px">🍱</div><div><b style="font-size:14px">3 · Ordina il box</b><p class="muted">Pasti pronti calibrati sul tuo piano, ogni settimana.</p></div></div>
+        </div>
+      </section>
+
+      <!-- ============ CONSULENZA ============ -->
+      <section class="screen" id="scr-consulenza">
+        <span class="eyebrow">Consulenza nutrizionale</span>
+        <h2 class="title">Visita in studio</h2>
+
+        <div class="card">
+          <div class="pro">
+            <div class="pro-photo">AS</div>
+            <div>
+              <b style="font-size:16px;font-family:var(--display)">Dott.ssa Anna Serra</b>
+              <p class="muted" style="margin-top:2px">Biologa nutrizionista · Ordine dei Biologi n. 048213</p>
+              <div class="row" style="margin-top:5px;gap:7px"><span class="stars">★★★★★</span><small class="muted">4,9 · 127 recensioni</small></div>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <p class="muted">La visita include anamnesi completa, analisi della composizione corporea (bioimpedenziometria), definizione degli obiettivi e consegna del piano alimentare personalizzato entro 5 giorni.</p>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Listino</span>
+          <div class="price-opt sel" data-visit="prima" onclick="pickVisit(this,'prima')">
+            <div><b style="font-size:15px">Prima visita</b><br><small>60 minuti · piano alimentare incluso</small></div>
+            <div class="p">€ 90</div>
+          </div>
+          <div class="price-opt" data-visit="controllo" onclick="pickVisit(this,'controllo')">
+            <div><b style="font-size:15px">Visita di controllo</b><br><small>30 minuti · verifica progressi</small></div>
+            <div class="p">€ 50</div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px" onclick="openBooking()">Scegli data e ora</button>
+          <p class="muted" style="margin-top:10px;font-size:12px">Cancellazione o spostamento gratuiti fino a 48 ore prima: ricevi un credito valido 6 mesi. Oltre le 48 ore l'importo non è rimborsabile. Se lo studio annulla, rimborso completo.</p>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Dicono di noi</span>
+          <div class="review"><p>"In tre mesi ho perso 7 kg senza mai sentirmi a dieta. Il box settimanale mi ha salvato la vita lavorativa."</p><small>Giulia R. · ★★★★★</small></div>
+          <div class="review"><p>"Finalmente un piano pensato per chi si allena. Professionale e sempre disponibile."</p><small>Marco T. · ★★★★★</small></div>
+          <div class="review"><p>"Prenotazione dall'app comodissima, promemoria puntuali. Consigliata."</p><small>Elena P. · ★★★★☆</small></div>
+        </div>
+      </section>
+
+      <!-- ============ BOX ============ -->
+      <section class="screen" id="scr-box"></section>
+
+      <!-- ============ NOTIFICHE ============ -->
+      <section class="screen" id="scr-notifiche">
+        <span class="eyebrow">Notifiche</span>
+        <h2 class="title">Le tue notifiche</h2>
+        <div id="notif-list"></div>
+      </section>
+
+      <!-- ============ PROFILO ============ -->
+      <section class="screen" id="scr-profilo">
+        <span class="eyebrow">Profilo</span>
+        <h2 class="title" id="profile-name">Michele G.</h2>
+        <div id="profile-body"></div>
+      </section>
+    </div>
+
+    <!-- ============ WIZARD PRENOTAZIONE ============ -->
+    <div class="sheet" id="sheet-booking">
+      <div class="sheet-head">
+        <button class="back" onclick="bookingBack()">←</button>
+        <b id="bk-title">Scegli la data</b>
+        <div class="steps"><i id="st1" class="on"></i><i id="st2"></i><i id="st3"></i></div>
+      </div>
+      <div class="sheet-body" id="bk-body"></div>
+      <div class="sheet-foot"><button class="btn btn-primary" id="bk-next" disabled onclick="bookingNext()">Continua</button></div>
+    </div>
+
+    <!-- ============ DETTAGLIO PASTO ============ -->
+    <div class="sheet" id="sheet-meal">
+      <div class="sheet-head"><button class="back" onclick="closeSheet('sheet-meal')">←</button><b>Dettaglio pasto</b></div>
+      <div class="sheet-body" id="meal-body"></div>
+    </div>
+
+    <!-- ============ CHECKOUT BOX ============ -->
+    <div class="sheet" id="sheet-boxbuy">
+      <div class="sheet-head"><button class="back" onclick="closeSheet('sheet-boxbuy')">←</button><b>Ordina il box</b></div>
+      <div class="sheet-body" id="boxbuy-body"></div>
+    </div>
+
+    <!-- ============ ADMIN ============ -->
+    <div class="sheet" id="sheet-admin">
+      <div class="sheet-head">
+        <button class="back" onclick="closeSheet('sheet-admin')">←</button>
+        <b>Pannello studio</b>
+        <span class="admin-badge" style="margin-left:auto">Admin</span>
+      </div>
+      <div class="sheet-body">
+        <div class="card">
+          <span class="eyebrow">Disponibilità · Lun 20 luglio</span>
+          <p class="muted" style="margin-top:4px">Tocca gli orari per aprirli o chiuderli alla prenotazione.</p>
+          <div class="avail-grid" id="avail-grid"></div>
+        </div>
+        <div class="card">
+          <span class="eyebrow">Clienti · Assegna piano alimentare</span>
+          <div class="client-row">
+            <div class="avatar-mini">MG</div>
+            <div style="flex:1"><b style="font-size:14px">Michele G.</b><p class="muted" style="font-size:12px">Prima visita: 15 lug</p></div>
+            <select onchange="toast('Piano \u00AB'+this.value+'\u00BB assegnato a Michele G.')">
+              <option>— nessuno —</option>
+              <option>Dimagrimento 1400 kcal</option>
+              <option>Sportivo 2200 kcal</option>
+              <option>Mediterranea 1800 kcal</option>
+            </select>
+          </div>
+          <div class="client-row">
+            <div class="avatar-mini">GR</div>
+            <div style="flex:1"><b style="font-size:14px">Giulia R.</b><p class="muted" style="font-size:12px">Controllo: 22 lug</p></div>
+            <select><option>Dimagrimento 1400 kcal</option></select>
+          </div>
+          <div class="client-row">
+            <div class="avatar-mini">MT</div>
+            <div style="flex:1"><b style="font-size:14px">Marco T.</b><p class="muted" style="font-size:12px">Controllo: 29 lug</p></div>
+            <select><option>Sportivo 2200 kcal</option></select>
+          </div>
+        </div>
+        <div class="card">
+          <span class="eyebrow">Ordini box · Settimana 20–26 lug</span>
+          <div class="client-row"><div style="font-size:20px">🍱</div><div style="flex:1"><b style="font-size:14px">7 box da preparare</b><p class="muted" style="font-size:12px">5 abbonamenti · 2 singoli</p></div><span class="chip">Ritiro lun</span></div>
+          <div class="client-row"><div style="font-size:20px">📣</div><div style="flex:1"><b style="font-size:14px">Invia promozione</b><p class="muted" style="font-size:12px">Notifica push ai clienti interessati</p></div><button class="btn btn-ghost" style="width:auto;padding:9px 14px;font-size:13px" onclick="toast('Promozione inviata a 43 clienti 📣')">Invia</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ PANNELLO DEMO ============ -->
+    <div class="demo-panel" id="demo-panel" onclick="if(event.target===this)closeDemo()">
+      <div class="demo-card">
+        <h3>Modalità demo</h3>
+        <p class="muted">Scegli uno scenario per mostrare i diversi stati dell'app.</p>
+        <div class="persona" data-p="new" onclick="setPersona('new')">
+          <div class="em">👋</div>
+          <div><b>Nuovo cliente</b><small>Nessuna consulenza · box non disponibile</small></div>
+        </div>
+        <div class="persona" data-p="plan" onclick="setPersona('plan')">
+          <div class="em">📋</div>
+          <div><b>Dieta assegnata</b><small>Piano "Dimagrimento 1400 kcal" · può ordinare il box</small></div>
+        </div>
+        <div class="persona" data-p="regular" onclick="setPersona('regular')">
+          <div class="em">🏆</div>
+          <div><b>Cliente abituale</b><small>8 box consecutivi · abbonamento attivo</small></div>
+        </div>
+        <div class="hr"></div>
+        <button class="btn btn-primary" onclick="closeDemo();openSheet('sheet-admin')">Apri il pannello dello studio</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- ============ TABBAR ============ -->
+    <nav class="tabbar">
+      <button class="tab active" data-t="home" onclick="go('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>Home
+      </button>
+      <button class="tab" data-t="consulenza" onclick="go('consulenza')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>Consulenza
+      </button>
+      <button class="tab" data-t="box" onclick="go('box')">
+        <svg viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Box<span class="dot"></span>
+      </button>
+      <button class="tab" data-t="notifiche" onclick="go('notifiche')">
+        <svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7M10.5 20a2 2 0 0 0 3 0"/></svg>Notifiche<span class="dot"></span>
+      </button>
+      <button class="tab" data-t="profilo" onclick="go('profilo')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>Profilo
+      </button>
+    </nav>
+  </div>
+</div>
+
+<script>
+/* =================== stato =================== */
+const S = {
+  persona:'new',          // new | plan | regular
+  appointment:null,       // {type,date,time}
+  boxOrdered:false,
+  boxPlanType:null,       // 'single' | 'sub'
+  pickup:null,
+  credit:0,
+};
+
+/* =================== navigazione =================== */
+function go(t){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('scr-'+t).classList.add('active');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
+  if(t==='box') renderBox();
+  if(t==='notifiche') renderNotifs();
+  if(t==='profilo') renderProfile();
+  if(t==='home') renderHome();
+}
+function openSheet(id){document.getElementById(id).classList.add('open')}
+function closeSheet(id){document.getElementById(id).classList.remove('open')}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* =================== demo panel =================== */
+function openDemo(){document.getElementById('demo-panel').classList.add('open');
+  document.querySelectorAll('.persona').forEach(p=>p.classList.toggle('sel',p.dataset.p===S.persona));}
+function closeDemo(){document.getElementById('demo-panel').classList.remove('open')}
+function setPersona(p){
+  S.persona=p; S.boxOrdered=false; S.boxPlanType=null;
+  if(p==='new'){S.appointment=null}
+  if(p==='plan'){S.appointment=null}
+  if(p==='regular'){S.appointment=null;S.boxPlanType='sub'}
+  closeDemo();
+  go('home');
+  toast(p==='new'?'Scenario: nuovo cliente':p==='plan'?'Scenario: dieta assegnata':'Scenario: cliente abituale');
+  updateDots();
+}
+function updateDots(){
+  document.querySelector('[data-t="box"]').classList.toggle('has-dot',S.persona!=='new'&&!S.boxOrdered);
+  document.querySelector('[data-t="notifiche"]').classList.add('has-dot');
+}
+
+/* =================== home =================== */
+function renderHome(){
+  const h=document.getElementById('home-next');
+  const heroT=document.getElementById('hero-title'), heroS=document.getElementById('hero-sub');
+  if(S.persona==='regular'){
+    heroT.innerHTML='Bentornato,<br>Michele 👏';
+    heroS.textContent='8 settimane consecutive di box. È il momento giusto per una visita di controllo?';
+  }else if(S.persona==='plan'){
+    heroT.innerHTML='Il tuo piano<br>è pronto.';
+    heroS.textContent='La Dott.ssa Serra ha caricato il piano "Dimagrimento 1400 kcal". Il box di questa settimana ti aspetta.';
+  }else{
+    heroT.innerHTML='La tua dieta,<br>seguita davvero.';
+    heroS.textContent='Consulenza personalizzata con la Dott.ssa Serra e pasti pronti costruiti sul tuo piano alimentare.';
+  }
+  let html='';
+  if(S.appointment){
+    html+=`<div class="card" style="border-color:var(--verde)">
+      <div class="spread"><span class="eyebrow">Prossimo appuntamento</span><span class="chip">Confermato</span></div>
+      <div style="font-family:var(--display);font-weight:800;font-size:17px;margin-top:6px">${S.appointment.type==='prima'?'Prima visita':'Visita di controllo'}</div>
+      <p class="muted">${S.appointment.date} · ore ${S.appointment.time} · Via dei Gelsomini 12, Pachino</p>
+      <div class="row" style="margin-top:12px;gap:8px">
+        <button class="btn btn-ghost" style="font-size:13px;padding:11px" onclick="go('profilo')">Gestisci</button>
+      </div></div>`;
+  }
+  if(S.persona==='plan'&&!S.boxOrdered){
+    html+=`<div class="deadline"><div style="font-size:22px">⏳</div><div><b>Ordina entro giovedì alle 20:00</b><small>per ricevere il box di lunedì prossimo</small></div></div>`;
+  }
+  h.innerHTML=html;
+  updateDots();
+}
+
+/* =================== consulenza / prenotazione =================== */
+let bk={step:1,type:'prima',date:null,time:null,month:0};
+function pickVisit(el,t){
+  document.querySelectorAll('.price-opt').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel'); bk.type=t;
+}
+function openBooking(){bk.step=1;bk.date=null;bk.time=null;renderBooking();openSheet('sheet-booking')}
+function bookingBack(){ if(bk.step===1){closeSheet('sheet-booking')} else {bk.step--;renderBooking()} }
+function bookingNext(){
+  if(bk.step<3){bk.step++;renderBooking();return}
+  // conferma finale
+  S.appointment={type:bk.type,date:bk.date,time:bk.time};
+  closeSheet('sheet-booking');
+  go('home');
+  toast('Appuntamento confermato ✓  Promemoria 24h prima.');
+}
+function renderBooking(){
+  const b=document.getElementById('bk-body'), nxt=document.getElementById('bk-next');
+  document.getElementById('st1').className=bk.step>=1?'on':'';
+  document.getElementById('st2').className=bk.step>=2?'on':'';
+  document.getElementById('st3').className=bk.step>=3?'on':'';
+  const title=document.getElementById('bk-title');
+  if(bk.step===1){
+    title.textContent='Scegli data e ora';
+    nxt.textContent='Continua';
+    nxt.disabled=!(bk.date&&bk.time);
+    b.innerHTML=`
+      <div class="card">
+        <div class="cal-head"><button class="cal-nav">‹</button><b>Luglio 2026</b><button class="cal-nav">›</button></div>
+        <div class="cal-grid">
+          ${['L','M','M','G','V','S','D'].map(d=>`<span class="dow">${d}</span>`).join('')}
+          ${calDays()}
+        </div>
+        <div id="slot-area">${bk.date?slotHtml():'<p class="muted" style="margin-top:12px;text-align:center">Seleziona un giorno disponibile</p>'}</div>
+      </div>
+      <p class="muted" style="font-size:12px">Le disponibilità sono gestite dallo studio dal pannello di amministrazione.</p>`;
+  }
+  if(bk.step===2){
+    title.textContent='Riepilogo';
+    nxt.textContent='Vai al pagamento';
+    nxt.disabled=false;
+    const price=bk.type==='prima'?90:50;
+    b.innerHTML=`
+      <div class="card">
+        <span class="eyebrow">Riepilogo</span>
+        <div class="spread" style="margin-top:12px"><span class="muted">Tipo di visita</span><b>${bk.type==='prima'?'Prima visita · 60 min':'Controllo · 30 min'}</b></div>
+        <div class="spread" style="margin-top:8px"><span class="muted">Data</span><b>${bk.date}</b></div>
+        <div class="spread" style="margin-top:8px"><span class="muted">Ora</span><b>${bk.time}</b></div>
+        <div class="spread" style="margin-top:8px"><span class="muted">Professionista</span><b>Dott.ssa Anna Serra</b></div>
+        <div class="hr"></div>
+        <div class="spread"><b>Totale</b><b style="font-family:var(--display);font-size:22px;color:var(--verde)">€ ${price}</b></div>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Condizioni</span>
+        <p class="muted" style="margin-top:8px">✓ Sposta o cancella gratis fino a 48 h prima → credito valido 6 mesi<br>✗ Con meno di 48 h di preavviso l'importo non è rimborsabile<br>✓ Se lo studio annulla, rimborso completo automatico</p>
+      </div>`;
+  }
+  if(bk.step===3){
+    title.textContent='Pagamento';
+    nxt.textContent='Fine (demo)';
+    nxt.disabled=true;
+    const price=bk.type==='prima'?90:50;
+    b.innerHTML=`
+      <div class="card" style="text-align:center">
+        <span class="eyebrow">Totale da pagare</span>
+        <div style="font-family:var(--display);font-weight:800;font-size:40px;color:var(--verde);margin:8px 0">€ ${price}</div>
+        <p class="muted">Pagamento sicuro · ricevuta via email</p>
+        <button class="paybtn dark" onclick="payDone(' Pay')"> Pay</button>
+        <button class="paybtn g" onclick="payDone('Google Pay')"><b style="color:#4285F4">G</b>&nbsp;Pay</button>
+        <button class="paybtn card" onclick="payDone('carta')">💳 Carta di credito</button>
+      </div>`;
+  }
+}
+function payDone(m){
+  const b=document.getElementById('bk-body');
+  b.innerHTML=`<div class="success-hero">
+    <div class="ok">✓</div>
+    <h3>Appuntamento confermato</h3>
+    <p class="muted">${bk.type==='prima'?'Prima visita':'Visita di controllo'} · ${bk.date} · ore ${bk.time}<br>Pagato con ${m}. Ti invieremo un promemoria 24 ore prima con le indicazioni per raggiungere lo studio.</p>
+  </div>`;
+  const nxt=document.getElementById('bk-next');
+  nxt.disabled=false; nxt.textContent='Torna alla home';
+}
+function calDays(){
+  // luglio 2026: mercoledì 1. Disponibilità demo dal 20 in poi (lun–ven)
+  const avail=[20,21,22,23,24,27,28,29,30,31];
+  let cells='';
+  for(let i=0;i<2;i++)cells+='<span></span>'; // offset: 1 luglio = mercoledì
+  for(let d=1;d<=31;d++){
+    const av=avail.includes(d);
+    cells+=`<span class="day ${av?'av':''} ${bk.date==='lun '+d+' luglio'||bk.date&&bk.date.endsWith(' '+d+' luglio')?'sel':''}" ${av?`onclick="pickDay(${d})"`:''}>${d}</span>`;
+  }
+  return cells;
+}
+function pickDay(d){
+  const dows=['dom','lun','mar','mer','gio','ven','sab'];
+  const dow=dows[new Date(2026,6,d).getDay()];
+  bk.date=`${dow} ${d} luglio`; bk.time=null; renderBooking();
+}
+function slotHtml(){
+  const slots=['9:00','9:30','10:30','11:30','16:00','17:30'];
+  return `<div class="hr"></div><b style="font-size:13.5px">Orari disponibili · ${bk.date}</b>
+    <div class="slots">${slots.map(s=>`<span class="slot ${bk.time===s?'sel':''}" onclick="bk.time='${s}';renderBooking()">${s}</span>`).join('')}</div>`;
+}
+
+/* =================== box pasti =================== */
+const MEALS={
+  lun:[{e:'🐟',bg:'#E7F0E4',t:'Orata al forno con verdure grigliate',k:420,p:38,c:22,f:18},
+       {e:'🥣',bg:'#F4EEE2',t:'Vellutata di zucca e ceci con crostini',k:380,p:16,c:48,f:12}],
+  mar:[{e:'🍗',bg:'#F3EAE0',t:'Pollo alle erbe con patate dolci',k:450,p:42,c:35,f:14},
+       {e:'🥗',bg:'#E7F0E4',t:'Insalata di farro, feta e pomodorini',k:400,p:18,c:52,f:13}],
+  mer:[{e:'🍝',bg:'#F4EEE2',t:'Pasta integrale al pesto di rucola',k:460,p:17,c:62,f:15},
+       {e:'🐙',bg:'#E4EDF0',t:'Polpo su crema di patate',k:390,p:34,c:28,f:14}],
+  gio:[{e:'🥩',bg:'#F3E6E0',t:'Tagliata di manzo con rucola e grana',k:440,p:44,c:12,f:22},
+       {e:'🍚',bg:'#EFEFE3',t:'Riso venere con verdure croccanti',k:410,p:14,c:58,f:11}],
+  ven:[{e:'🐠',bg:'#E4EDF0',t:'Salmone al vapore con broccoli',k:430,p:36,c:16,f:24},
+       {e:'🥘',bg:'#F4EEE2',t:'Zuppa di lenticchie e carote',k:370,p:19,c:46,f:10}],
+  sab:[{e:'🍤',bg:'#F3EAE0',t:'Gamberi saltati con zucchine',k:390,p:32,c:20,f:16},
+       {e:'🍕',bg:'#F4EEE2',t:'Piadina integrale con bresaola',k:420,p:28,c:44,f:12}],
+  dom:[{e:'🍲',bg:'#EFEFE3',t:'Minestrone ricco con orzo',k:360,p:13,c:50,f:9},
+       {e:'🧆',bg:'#E7F0E4',t:'Polpette di tacchino al pomodoro',k:430,p:37,c:24,f:17}],
+};
+let boxDay='lun';
+function renderBox(){
+  const s=document.getElementById('scr-box');
+  if(S.persona==='new'){
+    s.innerHTML=`<span class="eyebrow">Box settimanale</span><h2 class="title">I tuoi pasti pronti</h2>
+      <div class="locked">
+        <div class="big">🔒</div>
+        <h3>Prima serve il tuo piano</h3>
+        <p class="muted">Il box viene preparato sul piano alimentare che ricevi dopo la consulenza in studio. Prenota la visita e, appena la dottoressa carica il tuo piano, qui troverai il menu della settimana.</p>
+        <button class="btn btn-primary" style="margin-top:18px" onclick="go('consulenza')">Prenota la consulenza</button>
+      </div>`;
+    return;
+  }
+  const week=S.persona==='regular'?3:2;
+  const ordered=S.boxOrdered||S.persona==='regular';
+  const days=Object.keys(MEALS);
+  s.innerHTML=`
+    <div class="spread">
+      <div><span class="eyebrow">Il tuo piano</span><h2 class="title" style="margin-bottom:6px">Dimagrimento<br>1400 kcal</h2></div>
+      <span class="chip">Settimana ${week} di 4</span>
+    </div>
+    ${ordered
+      ? `<div class="card" style="border-color:var(--verde)">
+          <div class="spread"><span class="eyebrow">Box in preparazione</span><span class="chip">${S.persona==='regular'?'Abbonamento attivo':'Ordinato ✓'}</span></div>
+          <p class="muted" style="margin-top:8px">Ritiro <b>lunedì 20 luglio</b> · fascia <b>${S.pickup||'mattina 8:30–12:30'}</b><br>Via dei Gelsomini 12, Pachino. Se non ritiri entro martedì sera, il box risulta consegnato senza rimborso.</p>
+        </div>`
+      : `<div class="deadline"><div style="font-size:22px">⏳</div><div><b>Ordina entro giovedì 16 luglio, ore 20:00</b><small>Ritiro lunedì 20 in studio · mattina o pomeriggio</small></div></div>`}
+    <p class="muted" style="margin-bottom:10px">14 pasti — pranzo e cena per 7 giorni. Il menu ruota su un ciclo di 4 settimane.</p>
+    <div class="week-strip">
+      ${days.map((d,i)=>`<div class="wday ${boxDay===d?'sel':''}" onclick="boxDay='${d}';renderBox()"><small>${d}</small><b>${13+i}</b></div>`).join('')}
+    </div>
+    <div id="meals">
+      ${MEALS[boxDay].map((m,i)=>`
+        <div class="meal" onclick="openMeal('${boxDay}',${i})">
+          <div class="meal-ph" style="background:${m.bg}">${m.e}</div>
+          <div style="flex:1">
+            <span class="tag">${i===0?'Pranzo':'Cena'}</span>
+            <h4>${m.t}</h4>
+            <div class="macro"><span>${m.k} kcal</span><span>P ${m.p}g</span><span>C ${m.c}g</span><span>G ${m.f}g</span></div>
+          </div>
+        </div>`).join('')}
+    </div>
+    ${ordered?'':`<button class="btn btn-primary" style="margin-top:6px" onclick="openBoxBuy()">Ordina il box · da € 79</button>`}`;
+}
+function openMeal(day,i){
+  const m=MEALS[day][i];
+  document.getElementById('meal-body').innerHTML=`
+    <div style="height:170px;border-radius:var(--r-lg);background:${m.bg};display:grid;place-items:center;font-size:72px;margin-bottom:16px">${m.e}</div>
+    <span class="tag" style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--verde)">${i===0?'Pranzo':'Cena'} · ${day}</span>
+    <h2 class="title" style="font-size:22px">${m.t}</h2>
+    <div class="card"><span class="eyebrow">Valori nutrizionali</span>
+      <div class="macro" style="margin-top:10px"><span>${m.k} kcal</span><span>Proteine ${m.p} g</span><span>Carboidrati ${m.c} g</span><span>Grassi ${m.f} g</span></div>
+    </div>
+    <div class="card"><span class="eyebrow">Conservazione</span>
+      <p class="muted" style="margin-top:8px">In frigorifero a 0–4 °C. Consumare entro la data indicata sull'etichetta (max 4 giorni dal ritiro). Non ricongelare.</p>
+    </div>
+    <div class="card"><span class="eyebrow">Riscaldamento</span>
+      <p class="muted" style="margin-top:8px">🔥 Microonde: 2–3 min a 750 W, coperto<br>🍳 Padella: 4–5 min a fuoco medio con un cucchiaio d'acqua<br>🥗 I piatti freddi sono pronti da gustare</p>
+    </div>`;
+  openSheet('sheet-meal');
+}
+let buy={plan:'sub',pickup:'mattina'};
+function openBoxBuy(){buy={plan:'sub',pickup:'mattina'};renderBoxBuy();openSheet('sheet-boxbuy')}
+function renderBoxBuy(){
+  document.getElementById('boxbuy-body').innerHTML=`
+    <div class="card">
+      <span class="eyebrow">Scegli la formula</span>
+      <div class="plan-opt ${buy.plan==='single'?'sel':''}" onclick="buy.plan='single';renderBoxBuy()">
+        <div class="spread"><b style="font-size:15px">Box singolo</b><b style="font-family:var(--display);font-size:20px;color:var(--verde)">€ 89</b></div>
+        <small class="muted">14 pasti · una settimana, quando vuoi</small>
+      </div>
+      <div class="plan-opt ${buy.plan==='sub'?'sel':''}" onclick="buy.plan='sub';renderBoxBuy()">
+        <span class="chip save">Risparmi € 40/mese</span>
+        <div class="spread"><b style="font-size:15px">Abbonamento mensile</b><b style="font-family:var(--display);font-size:20px;color:var(--verde)">€ 79<small style="font-size:12px;color:var(--grigio)">/box</small></b></div>
+        <small class="muted">4 box al mese · rinnovo automatico, disdici quando vuoi</small>
+      </div>
+    </div>
+    <div class="card">
+      <span class="eyebrow">Ritiro · lunedì 20 luglio</span>
+      <div class="slots" style="grid-template-columns:1fr 1fr">
+        <span class="slot ${buy.pickup==='mattina'?'sel':''}" onclick="buy.pickup='mattina';renderBoxBuy()">Mattina<br><small style="font-weight:500">8:30–12:30</small></span>
+        <span class="slot ${buy.pickup==='pomeriggio'?'sel':''}" onclick="buy.pickup='pomeriggio';renderBoxBuy()">Pomeriggio<br><small style="font-weight:500">15:00–19:00</small></span>
+      </div>
+      <p class="muted" style="margin-top:10px;font-size:12px">Studio Meridia · Via dei Gelsomini 12, Pachino. Se il box non viene ritirato entro martedì sera, risulta consegnato e non è rimborsabile.</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="spread"><b>Totale oggi</b><b style="font-family:var(--display);font-size:24px;color:var(--verde)">€ ${buy.plan==='sub'?79:89}</b></div>
+      <button class="paybtn dark" onclick="boxPaid(' Pay')"> Pay</button>
+      <button class="paybtn g" onclick="boxPaid('Google Pay')"><b style="color:#4285F4">G</b>&nbsp;Pay</button>
+      <button class="paybtn card" onclick="boxPaid('carta')">💳 Carta di credito</button>
+    </div>`;
+}
+function boxPaid(m){
+  S.boxOrdered=true; S.boxPlanType=buy.plan; S.pickup=buy.pickup==='mattina'?'mattina 8:30–12:30':'pomeriggio 15:00–19:00';
+  document.getElementById('boxbuy-body').innerHTML=`
+    <div class="success-hero">
+      <div class="ok">🍱</div>
+      <h3>Box ordinato!</h3>
+      <p class="muted">${buy.plan==='sub'?'Abbonamento mensile attivato':'Box singolo acquistato'} · pagato con ${m}.<br>Ritiro lunedì 20 luglio, ${S.pickup}.<br>Ti avvisiamo lunedì mattina quando il box è pronto.</p>
+      <button class="btn btn-primary" style="margin-top:18px" onclick="closeSheet('sheet-boxbuy');renderBox()">Perfetto</button>
+    </div>`;
+  updateDots();
+}
+
+/* =================== notifiche =================== */
+function renderNotifs(){
+  const base=[
+    ['⏰','Promemoria appuntamento','Domani alle 9:30: prima visita con la Dott.ssa Serra. Via dei Gelsomini 12 — parcheggio interno disponibile.','ieri · 9:30'],
+    ['🍱','Ordina il box entro domani','La settimana sta finendo: conferma il box di lunedì entro giovedì alle 20:00.','mer · 18:00'],
+    ['📦','Il tuo box è pronto!','Ti aspetta in studio (Via dei Gelsomini 12) fino a stasera alle 19:00. Ritiro anche domani entro le 19:00.','lun · 8:15'],
+  ];
+  const extra={
+    new:[['🥗','La dieta senza cucinare','Hai fatto la consulenza 3 giorni fa: sapevi che il tuo piano è disponibile anche come box di pasti pronti? Dai un\'occhiata.','oggi · 12:00']],
+    plan:[['🎂','Tanti auguri, Michele!','Per il tuo compleanno, il prossimo box è scontato del 15%. Valido 7 giorni. 🎉','oggi · 9:00']],
+    regular:[
+      ['🏆','8 settimane di fila!','Complimenti per la costanza. È il momento ideale per una visita di controllo: verifica i progressi con la dottoressa.','oggi · 10:00'],
+      ['💚','Ci manchi!','Non ordini da 3 settimane. Torna con il 10% di sconto sul prossimo box — codice RITORNO10.','esempio · recupero'],
+      ['📣','Promo di settembre','Porta un amico alla prima visita: per entrambi un box omaggio.','esempio · promozione'],
+    ],
+  };
+  const list=[...(extra[S.persona]||[]),...base];
+  document.getElementById('notif-list').innerHTML=
+    list.map(n=>`<div class="notif"><div class="ic">${n[0]}</div><div style="flex:1"><div class="spread"><b>${n[1]}</b><small>${n[3]}</small></div><p>${n[2]}</p></div></div>`).join('')
+    +`<p class="muted" style="margin-top:14px;font-size:12px">Le notifiche push sono automatiche e profilate sul comportamento del cliente: promemoria appuntamenti (24 h prima), scadenza ordine (mercoledì), box pronto (lunedì), proposta box post-consulenza (dopo 3 giorni), recupero inattivi (3 settimane, con sconto), controllo dopo 8 box consecutivi, compleanno e promozioni dello studio.</p>`;
+}
+
+/* =================== profilo =================== */
+function renderProfile(){
+  const p=document.getElementById('profile-body');
+  let html='';
+  if(S.appointment){
+    html+=`<div class="card">
+      <div class="spread"><span class="eyebrow">Appuntamento</span><span class="chip">Confermato</span></div>
+      <div style="font-family:var(--display);font-weight:800;font-size:17px;margin-top:6px">${S.appointment.type==='prima'?'Prima visita':'Visita di controllo'}</div>
+      <p class="muted">${S.appointment.date} · ore ${S.appointment.time}</p>
+      <div class="row" style="margin-top:12px;gap:8px">
+        <button class="btn btn-ghost" style="font-size:13px;padding:11px" onclick="toast('Più di 48 h di preavviso: spostamento gratuito ✓')">Sposta</button>
+        <button class="btn btn-ghost" style="font-size:13px;padding:11px;color:#9C4A21;background:#FBE3D6" onclick="cancelAppt()">Cancella</button>
+      </div>
+      <p class="muted" style="margin-top:10px;font-size:12px">Mancano più di 48 h: puoi spostare o cancellare gratuitamente. Cancellando ricevi un credito valido 6 mesi.</p>
+    </div>`;
+  } else {
+    html+=`<div class="card"><span class="eyebrow">Appuntamenti</span><p class="muted" style="margin-top:8px">Nessun appuntamento in programma.</p>
+    <button class="btn btn-ghost" style="margin-top:12px" onclick="go('consulenza')">Prenota una visita</button></div>`;
+  }
+  if(S.credit>0){
+    html+=`<div class="card" style="border-color:var(--lime)"><div class="spread"><span class="eyebrow">Credito disponibile</span><b style="font-family:var(--display);font-size:22px;color:var(--verde)">€ ${S.credit}</b></div><p class="muted" style="margin-top:6px">Da una cancellazione. Utilizzabile entro 6 mesi (scade il 17 gen 2027).</p></div>`;
+  }
+  html+=`<div class="card">
+    <span class="eyebrow">Il mio percorso</span>
+    <div class="spread" style="margin-top:10px"><span class="muted">Piano attivo</span><b>${S.persona==='new'?'—':'Dimagrimento 1400 kcal'}</b></div>
+    <div class="spread" style="margin-top:8px"><span class="muted">Box ricevuti</span><b>${S.persona==='regular'?'8':S.boxOrdered?'1 in preparazione':'0'}</b></div>
+    <div class="spread" style="margin-top:8px"><span class="muted">Abbonamento</span><b>${(S.boxPlanType==='sub')?'Attivo · € 79/box':'Non attivo'}</b></div>
+  </div>
+  <div class="card">
+    <span class="eyebrow">Studio</span>
+    <p class="muted" style="margin-top:8px">Studio Meridia — Via dei Gelsomini 12, Pachino (SR)<br>Lun–Ven 8:30–19:00 · ☎ 0931 000000</p>
+  </div>`;
+  p.innerHTML=html;
+}
+function cancelAppt(){
+  const price=S.appointment.type==='prima'?90:50;
+  S.credit+=price; S.appointment=null;
+  renderProfile(); renderHome();
+  toast(`Appuntamento cancellato. € ${price} di credito accreditati (validi 6 mesi).`);
+}
+
+/* =================== admin =================== */
+(function(){
+  const slots=['8:30','9:00','9:30','10:30','11:30','12:00','16:00','17:30'];
+  const on=new Set(['9:00','9:30','10:30','11:30','16:00','17:30']);
+  document.getElementById('avail-grid').innerHTML=slots.map(s=>
+    `<span class="avail ${on.has(s)?'on':''}" onclick="this.classList.toggle('on')">${s}</span>`).join('');
+})();
+
+/* init */
+renderHome(); updateDots();
+</script>
+</body>
+</html>
