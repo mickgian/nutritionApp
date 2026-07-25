@@ -36,7 +36,7 @@ loading/empty/error/content states.
 
 ## Epic 0 — Foundations & monorepo
 
-### DEV-001: CI pipeline (GitHub Actions)
+### DEV-001: CI pipeline (GitHub Actions) — ✅ Done
 **Problem:** No automated checks; regressions can merge silently.
 **Solution:** Two workflows — backend (uv + ruff + pytest + coverage) and KMP
 (`./gradlew :shared:allTests` + `:androidApp:assembleDebug`), triggered on PRs.
@@ -62,7 +62,7 @@ labels/bundle ids, and the resource package. Do it as one mechanical RESTRUCTURI
 **Risks:** broad import churn — verify every target still builds. Do before feature work.
 **Acceptance:** all targets compile; no `com.base` references remain; app shows "Meridia".
 
-### DEV-004: Domain schema design (data model ADR)
+### DEV-004: Domain schema design (data model ADR) — ✅ Done
 **Problem:** Features need a coherent schema before implementation.
 **Solution:** @primo + @egidio design the full ERD (entities table above), keys,
 indexes, ownership columns, and money-as-cents; record it as an ADR.

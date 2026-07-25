@@ -45,7 +45,10 @@ src = ["app", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF"]
-ignore = ["B008"]  # FastAPI Depends() in defaults is idiomatic
+ignore = [
+    "B008",   # FastAPI Depends() in defaults is idiomatic
+    "UP042",  # we standardize on `str, Enum` for SQLModel enums (see ADR-001)
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]

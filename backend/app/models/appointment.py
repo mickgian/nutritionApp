@@ -12,7 +12,7 @@ from sqlmodel import Field, SQLModel
 
 
 class VisitType(str, Enum):
-    prima = "prima"        # Prima visita · 60 min · €90
+    prima = "prima"  # Prima visita · 60 min · €90
     controllo = "controllo"  # Visita di controllo · 30 min · €50
 
 

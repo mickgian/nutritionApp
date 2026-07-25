@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-import app.models  # noqa: F401  (register models on SQLModel.metadata)
+import app.models
 from app.api.deps import get_session
 from app.main import app
 
