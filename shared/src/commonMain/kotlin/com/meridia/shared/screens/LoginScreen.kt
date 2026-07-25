@@ -57,7 +57,7 @@ fun LoginScreen(
                         value = user,
                         onValueChange = { user = it },
                         label = { Text("Email") },
-                        placeholder = { Text("Enter your email") },
+                        placeholder = { Text("Inserisci la tua email") },
                         modifier = Modifier.focusRequester(emailFocusRequester),
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Next,
@@ -73,7 +73,7 @@ fun LoginScreen(
                         value = pass,
                         onValueChange = { pass = it },
                         label = { Text("Password") },
-                        placeholder = { Text("Enter your password") },
+                        placeholder = { Text("Inserisci la password") },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.focusRequester(passwordFocusRequester),
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -96,8 +96,8 @@ fun LoginScreen(
                     Button(
                         onClick = { vm.login(user, pass) },
                         enabled = user.isNotBlank() && pass.isNotBlank()
-                    ) { 
-                        Text("Login") 
+                    ) {
+                        Text("Accedi")
                     }
 
                     if (state is LoginViewModel.LoginState.Error) {
@@ -113,7 +113,7 @@ fun LoginScreen(
                         onClick = onSwitchToRegister,
                         modifier = Modifier.padding(top = 24.dp)
                     ) {
-                        Text("Don't have an account? Register")
+                        Text("Non hai un account? Registrati")
                     }
                 }
             }
@@ -122,7 +122,8 @@ fun LoginScreen(
 
             is LoginViewModel.LoginState.Success -> {
                 val token = (state as LoginViewModel.LoginState.Success).token            // TokenResponse
-                onSuccess(token)
+                // Fire navigation as a side-effect, not during composition (avoids re-navigation on recompose).
+                LaunchedEffect(Unit) { onSuccess(token) }
             }
 
 

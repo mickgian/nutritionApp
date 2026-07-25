@@ -34,12 +34,12 @@ class LoginViewModel(
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 
-    /** Triggered when the user presses "Log in" */
-    fun login(username: String, password: String) {
-        Logger.authInfo("VIEWMODEL_LOGIN_START", "LoginViewModel.login() called for username: $username")
+    /** Triggered when the user presses "Accedi" */
+    fun login(email: String, password: String) {
+        Logger.authInfo("VIEWMODEL_LOGIN_START", "LoginViewModel.login() called for email: $email")
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
-            runCatching { getRepository().loginAndSaveToken(username, password) }
+            runCatching { getRepository().loginAndSaveToken(email, password) }
                 .onSuccess { 
                     Logger.authInfo("VIEWMODEL_LOGIN_SUCCESS", "LoginViewModel login successful")
                     _loginState.value = LoginState.Success(it) 

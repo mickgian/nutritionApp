@@ -4,55 +4,58 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** POST /api/v1/auth/register body. */
 @Serializable
 data class RegisterRequest(
     val email: String,
-    val password: String
+    val password: String,
+    @SerialName("full_name") val fullName: String,
 )
 
+/** POST /api/v1/auth/login body. */
+@Serializable
+data class LoginRequest(
+    val email: String,
+    val password: String,
+)
+
+/** POST /api/v1/auth/login response. */
 @Serializable
 data class TokenResponse(
     @SerialName("access_token") val accessToken: String,
-    @SerialName("token_type")  val tokenType:  String,
-    @SerialName("expires_at")  val expiresAt:  Instant
+    @SerialName("token_type") val tokenType: String,
 )
+
+/** Public user shape returned by /auth/register and /auth/me. */
+@Serializable
+data class UserResponse(
+    val id: Int,
+    val email: String,
+    @SerialName("full_name") val fullName: String,
+    val role: String,
+)
+
+/**
+ * Locally-stored access token plus a client-side expiry hint. The backend login
+ * response carries only the token; expiry is set client-side (see
+ * AuthRepositoryImpl) and the server stays authoritative — a 401 on any
+ * authorized call triggers re-login.
+ */
+data class TokenWithExpiry(
+    val accessToken: String,
+    val expiresAt: Instant,
+)
+
+@Serializable
+data class ErrorResponse(
+    val detail: String,
+)
+
+// --- Chat template models (legacy; kept until the chat scaffold is removed) ---
 
 @Serializable
 data class SessionResponse(
     @SerialName("session_id") val sessionId: String,
     val name: String,
-    val token: TokenResponse
+    val token: TokenResponse,
 )
-
-@Serializable
-data class AuthResponse(
-    val id: Int,
-    val email: String,
-    @SerialName("access_token") val accessToken: String,
-    @SerialName("refresh_token") val refreshToken: String,
-    @SerialName("token_type") val tokenType: String,
-    @SerialName("expires_at") val expiresAt: Instant
-)
-
-data class TokenWithExpiry(
-    val accessToken: String,
-    val expiresAt: Instant
-)
-
-@Serializable
-data class ErrorResponse(
-    val detail: String
-)
-
-@Serializable
-data class ValidationErrorResponse(
-    val detail: String,
-    val errors: List<ValidationErrorDetail>? = null
-)
-
-@Serializable
-data class ValidationErrorDetail(
-    val field: String,
-    val message: String
-)
-

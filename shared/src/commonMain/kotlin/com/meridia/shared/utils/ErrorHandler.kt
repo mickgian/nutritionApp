@@ -1,170 +1,46 @@
 package com.meridia.shared.utils
 
-import com.meridia.shared.models.ErrorResponse
-import com.meridia.shared.models.ValidationErrorResponse
-import io.ktor.client.plugins.*
-import io.ktor.http.*
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.SerializationException
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.ServerResponseException
 
+/**
+ * Maps throwables to Italian, user-facing messages. Repository code already
+ * raises Italian AuthExceptions for HTTP errors it understands; this handler
+ * covers network failures and any unmapped HTTP status.
+ */
 object ErrorHandler {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
+
+    fun handleHttpError(exception: Throwable): String = when (exception) {
+        is ClientRequestException -> clientMessage(exception.response.status.value)
+        is ServerResponseException -> SERVER_ERROR
+        is ResponseException -> clientMessage(exception.response.status.value)
+        else -> networkMessage(exception.message)
     }
 
-    /**
-     * Converts HTTP exceptions to user-friendly error messages
-     */
-    fun handleHttpError(exception: Throwable): String {
-        return when (exception) {
-            is ResponseException -> {
-                when (exception.response.status.value) {
-                    400 -> handleBadRequest(exception)
-                    401 -> handleUnauthorized(exception)
-                    422 -> handleValidationError(exception)
-                    429 -> "Too many requests. Please try again later."
-                    500, 502, 503, 504 -> "Server error. Please try again later."
-                    else -> parseErrorMessage(exception) ?: "An unexpected error occurred"
-                }
-            }
-            is ClientRequestException -> {
-                when (exception.response.status.value) {
-                    400 -> handleBadRequest(exception)
-                    401 -> "Invalid credentials. Please check your email and password."
-                    404 -> "Service not found. Please try again later."
-                    422 -> handleValidationError(exception)
-                    else -> "Request failed. Please try again."
-                }
-            }
-            is ServerResponseException -> {
-                "Server error. Please try again later."
-            }
-            else -> exception.message?.let { parseGenericError(it) } ?: "An unexpected error occurred"
-        }
+    private fun clientMessage(status: Int): String = when (status) {
+        400 -> "Richiesta non valida. Controlla i dati inseriti."
+        401 -> "Credenziali non valide."
+        403 -> "Accesso non consentito."
+        404 -> "Risorsa non trovata."
+        409 -> "La risorsa esiste già."
+        422 -> "Controlla i dati inseriti e riprova."
+        429 -> "Troppe richieste. Riprova più tardi."
+        else -> "Richiesta non riuscita. Riprova."
     }
 
-    private fun handleBadRequest(exception: ResponseException): String {
-        val errorMessage = parseErrorMessage(exception)
+    private fun networkMessage(raw: String?): String {
+        val message = raw?.lowercase() ?: ""
         return when {
-            errorMessage?.contains("already registered", ignoreCase = true) == true -> 
-                "This email is already registered. Please use a different email or try logging in."
-            errorMessage?.contains("grant type", ignoreCase = true) == true ->
-                "Authentication error. Please try again."
-            else -> errorMessage ?: "Invalid request. Please check your input."
+            message.contains("connect") || message.contains("unreachable") ||
+                message.contains("host") || message.contains("network") ->
+                "Impossibile contattare il server. Controlla la connessione."
+            message.contains("timeout") -> "Tempo scaduto. Riprova."
+            raw.isNullOrBlank() -> "Si è verificato un errore imprevisto."
+            // A repository AuthException carries an already-Italian message: pass it through.
+            else -> raw
         }
     }
 
-    private fun handleUnauthorized(exception: ResponseException): String {
-        val errorMessage = parseErrorMessage(exception)
-        return when {
-            errorMessage?.contains("email", ignoreCase = true) == true ||
-            errorMessage?.contains("password", ignoreCase = true) == true ||
-            errorMessage?.contains("credentials", ignoreCase = true) == true ->
-                "Invalid email or password. Please check your credentials and try again."
-            else -> "Authentication failed. Please try again."
-        }
-    }
-
-    private fun handleValidationError(exception: ResponseException): String {
-        return try {
-            // Try to parse from exception message first
-            val exceptionMessage = exception.message ?: ""
-            if (exceptionMessage.contains("{") && exceptionMessage.contains("}")) {
-                val validationError = json.decodeFromString<ValidationErrorResponse>(exceptionMessage)
-                
-                if (validationError.errors?.isNotEmpty() == true) {
-                    // Convert validation errors to user-friendly messages
-                    validationError.errors.joinToString("\n") { error ->
-                        formatValidationError(error.field, error.message)
-                    }
-                } else {
-                    formatGeneralValidationMessage(validationError.detail)
-                }
-            } else {
-                // Fallback: analyze the message directly
-                formatGeneralValidationMessage(exceptionMessage)
-            }
-        } catch (_: SerializationException) {
-            // Fallback: parse common validation patterns from message
-            val message = exception.message ?: ""
-            formatGeneralValidationMessage(message)
-        } catch (_: Exception) {
-            "Please check your input and try again."
-        }
-    }
-
-    private fun formatValidationError(field: String, message: String): String {
-        return when (field.lowercase()) {
-            "email" -> when {
-                message.contains("required", ignoreCase = true) -> "Email is required."
-                message.contains("format", ignoreCase = true) || message.contains("valid", ignoreCase = true) -> 
-                    "Please enter a valid email address."
-                else -> "Email: $message"
-            }
-            "password" -> when {
-                message.contains("required", ignoreCase = true) -> "Password is required."
-                message.contains("8 characters", ignoreCase = true) || message.contains("8 items", ignoreCase = true) -> 
-                    "Password must be at least 8 characters long."
-                message.contains("uppercase", ignoreCase = true) -> 
-                    "Password must contain at least one uppercase letter."
-                message.contains("lowercase", ignoreCase = true) -> 
-                    "Password must contain at least one lowercase letter."
-                message.contains("number", ignoreCase = true) || message.contains("digit", ignoreCase = true) -> 
-                    "Password must contain at least one number."
-                message.contains("special", ignoreCase = true) -> 
-                    "Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>)."
-                else -> "Password: $message"
-            }
-            else -> "$field: $message"
-        }
-    }
-
-    private fun formatGeneralValidationMessage(detail: String): String {
-        return when {
-            detail.contains("8 characters", ignoreCase = true) || detail.contains("8 items", ignoreCase = true) -> 
-                "Password must be at least 8 characters long."
-            detail.contains("uppercase", ignoreCase = true) -> 
-                "Password must contain at least one uppercase letter."
-            detail.contains("lowercase", ignoreCase = true) -> 
-                "Password must contain at least one lowercase letter."
-            detail.contains("number", ignoreCase = true) || detail.contains("digit", ignoreCase = true) -> 
-                "Password must contain at least one number."
-            detail.contains("special", ignoreCase = true) -> 
-                "Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>)."
-            detail.contains("email", ignoreCase = true) && detail.contains("format", ignoreCase = true) -> 
-                "Please enter a valid email address."
-            detail.contains("already registered", ignoreCase = true) -> 
-                "This email is already registered. Please use a different email or try logging in."
-            else -> detail
-        }
-    }
-
-    private fun parseErrorMessage(exception: ResponseException): String? {
-        return try {
-            val exceptionMessage = exception.message ?: ""
-            if (exceptionMessage.contains("{") && exceptionMessage.contains("}")) {
-                val errorResponse = json.decodeFromString<ErrorResponse>(exceptionMessage)
-                errorResponse.detail
-            } else {
-                exceptionMessage.takeIf { it.isNotBlank() }
-            }
-        } catch (_: SerializationException) {
-            exception.message
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private fun parseGenericError(message: String): String {
-        return when {
-            message.contains("required for type", ignoreCase = true) -> 
-                "Authentication failed. Please check your credentials."
-            message.contains("connect", ignoreCase = true) -> 
-                "Unable to connect to server. Please check your internet connection."
-            message.contains("timeout", ignoreCase = true) -> 
-                "Request timed out. Please try again."
-            else -> message
-        }
-    }
+    private const val SERVER_ERROR = "Errore del server. Riprova più tardi."
 }

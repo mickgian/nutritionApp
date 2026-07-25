@@ -86,7 +86,7 @@ indexes, ownership columns, and money-as-cents; record it as an ADR.
 **Tests:** register happy, duplicate 409, login ok, bad password 401, `me` requires token.
 **Acceptance:** ≥80% coverage; Italian errors; JWT round-trips; no plaintext passwords.
 
-### DEV-011: Wire KMP auth to the backend
+### DEV-011: Wire KMP auth to the backend — ✅ Done
 **Problem:** `LoginViewModel`/`RegistrationViewModel` target a template API.
 **Solution:** Point the Ktor `AuthRepository` at the FastAPI endpoints; store the JWT
 in `TokenStorage`; attach it to authorized requests; handle 401 → back to login.
