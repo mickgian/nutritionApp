@@ -44,7 +44,7 @@ loading/empty/error/content states.
 **Files:** `.github/workflows/backend.yml`, `.github/workflows/kmp.yml`.
 **Acceptance:** both workflows green on a no-op PR; coverage reported; PR blocked on failure.
 
-### DEV-002: Design system from demo tokens
+### DEV-002: Design system from demo tokens — ✅ Done
 **Problem:** The demo's visual language (colors, radii, fonts) must live in Compose.
 **Solution:** Encode the demo palette (`--verde #17402F`, `--lime #C9E265`,
 `--panna #F7F8F3`, `--arancio #D96C3B`, etc.), radii, and typography into a Compose

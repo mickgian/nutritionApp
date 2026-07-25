@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.meridia.shared.auth.AuthModule
 import com.meridia.shared.auth.AuthState
+import com.meridia.shared.theme.MeridiaTheme
 import com.meridia.shared.models.SessionResponse
 import com.meridia.shared.screens.ChatScreenWithHistory
 import com.meridia.shared.screens.LoginScreen
@@ -57,7 +58,7 @@ fun CommonView() {
         println("DEBUG: StartDestination: $startDestination")
     }
 
-    MaterialTheme {
+    MeridiaTheme {
         // Show loading screen if AuthState is still Loading
         if (authState is AuthState.Loading) {
             Box(
@@ -73,7 +74,7 @@ fun CommonView() {
                     )
                 }
             }
-            return@MaterialTheme
+            return@MeridiaTheme
         }
 
         NavHost(
