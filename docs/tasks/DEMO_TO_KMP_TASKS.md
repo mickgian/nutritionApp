@@ -99,7 +99,7 @@ in `TokenStorage`; attach it to authorized requests; handle 401 → back to logi
 
 ## Epic 2 — Consultations & booking
 
-### DEV-020: Availability model & studio management (admin)
+### DEV-020: Availability model & studio management (admin) — ✅ Done
 **Problem:** Booking needs studio-defined open slots (demo admin toggles times).
 **Solution:** `AvailabilitySlot` (date, time, is_open). Admin endpoints
 `GET/PUT /api/v1/admin/availability` (require `admin`). @primo migration.

@@ -11,7 +11,9 @@ from sqlmodel.pool import StaticPool
 
 import app.models
 from app.api.deps import get_session
+from app.core.security import create_access_token, hash_password
 from app.main import app
+from app.models.user import User, UserRole
 
 
 @pytest.fixture(name="session")
@@ -34,3 +36,41 @@ def client_fixture(session: Session):
     app.dependency_overrides[get_session] = _get_session_override
     yield TestClient(app)
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="make_user")
+def make_user_fixture(session: Session):
+    """Factory that inserts a user (default: a cliente) and returns it."""
+
+    def _make(
+        email: str,
+        role: UserRole = UserRole.cliente,
+        password: str = "password123",
+    ) -> User:
+        user = User(
+            email=email,
+            hashed_password=hash_password(password),
+            full_name="Test User",
+            role=role,
+        )
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
+
+    return _make
+
+
+def _auth_header(user: User) -> dict[str, str]:
+    token = create_access_token(subject=str(user.id), role=user.role.value)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(name="admin_headers")
+def admin_headers_fixture(make_user) -> dict[str, str]:
+    return _auth_header(make_user("admin@studiomeridia.it", UserRole.admin))
+
+
+@pytest.fixture(name="cliente_headers")
+def cliente_headers_fixture(make_user) -> dict[str, str]:
+    return _auth_header(make_user("cliente@example.com", UserRole.cliente))
