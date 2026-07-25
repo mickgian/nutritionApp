@@ -30,15 +30,20 @@ criteria:
 
   - id: UI_PRESENT
     criticality: critical
+    applies_when: "this diff adds or modifies KMP client code under shared/src (screens, viewModels, or network). Phased backend-first delivery is allowed: a backend-only diff whose KMP consumer is a separately tracked task in docs/tasks/DEMO_TO_KMP_TASKS.md defers this check to that UI task (e.g. DEV-020/DEV-021 booking backend → DEV-022 booking wizard)."
     msg_it: "La schermata/ViewModel KMP esiste, è raggiungibile e chiama l'endpoint"
     check: |
-      If a new endpoint exists under backend/app/api/, the KMP client MUST consume it:
-      - find a repository method in shared/src/commonMain/kotlin/**/network/ that calls the new route path
+      When KMP client code is in scope, the endpoint it targets MUST be consumed end-to-end:
+      - find a repository method in shared/src/commonMain/kotlin/**/network/ that calls the route path
       - find a ViewModel that exposes the state and a @Composable screen that renders it
-      - if no KMP code touches the new endpoint → FAIL (backend shipping ahead of the app is a recurring sin)
+      - if the KMP diff adds a screen/ViewModel that does NOT reach a real endpoint → FAIL
+      Guard against "backend shipping ahead of the app": for a backend-only diff (no KMP files),
+      confirm the new endpoint has a paired KMP consumer task in docs/tasks/DEMO_TO_KMP_TASKS.md.
+      If no such task exists → FAIL (the endpoint would be dead code). The paired UI task is where
+      this criterion is actually enforced against a live Ktor call.
     evidence_required:
-      - "file:line of the Ktor client call to the new endpoint (route path)"
-      - "route path appears in both the backend router and the KMP repository"
+      - "file:line of the Ktor client call to the endpoint (route path), OR"
+      - "the docs/tasks entry that tracks the KMP consumer for a backend-only endpoint"
 
   - id: NAV_ENTRY
     criticality: high

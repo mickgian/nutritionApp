@@ -34,6 +34,9 @@ def upgrade() -> None:
     op.execute("UPDATE appointments SET price_cents = price_eur * 100")
     with op.batch_alter_table("appointments", schema=None) as batch_op:
         batch_op.alter_column("price_cents", existing_type=sa.Integer(), nullable=False)
+        # REVIEWED: expand-contract — price_eur is dropped only AFTER its data is copied
+        # into price_cents (UPDATE ... = price_eur * 100 above); no data is lost, and
+        # downgrade() restores price_eur from price_cents / 100.
         batch_op.drop_column("price_eur")
 
 
