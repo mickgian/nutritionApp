@@ -115,7 +115,7 @@ kotlin {
 
 android {
     compileSdk = 34
-    namespace = "com.base.shared"
+    namespace = "com.meridia.shared"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = 24
@@ -131,7 +131,7 @@ android {
 
 @Suppress("TooGenericExceptionCaught")
 configure<BuildKonfigExtension> {
-    packageName = "com.base.shared"
+    packageName = "com.meridia.shared"
     val properties = Properties()
 
     val rootProjectDir = project.rootProject.rootDir

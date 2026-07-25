@@ -5,10 +5,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import com.base.shared.TravelAppTheme
-import com.base.shared.previews.PlatformPreviews
-import com.base.shared.previews.QuickPreviews
-import com.base.shared.previews.ScreenPreviewGallery
+import com.meridia.shared.TravelAppTheme
+import com.meridia.shared.previews.PlatformPreviews
+import com.meridia.shared.previews.QuickPreviews
+import com.meridia.shared.previews.ScreenPreviewGallery
 
 /**
  * Desktop preview implementation for Compose Multiplatform screens.

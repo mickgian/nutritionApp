@@ -20,12 +20,12 @@ This guide explains how to use preview functionality for your Compose Multiplatf
 
 ### Preview Files
 ```
-shared/src/commonMain/kotlin/com/base/shared/
+shared/src/commonMain/kotlin/com/meridia/shared/
 ├── previews/ScreenPreviews.kt          # Common preview logic
 ├── screens/ChatScreen.kt               # Chat screen with previews
 └── screens/RegistrationScreen.kt       # Registration screen with previews
 
-androidApp/src/main/java/com/base/android/
+androidApp/src/main/java/com/meridia/android/
 └── previews/ScreenPreviews.kt          # Android @Preview implementations
 
 desktopApp/src/jvmMain/kotlin/
@@ -36,7 +36,7 @@ desktopApp/src/jvmMain/kotlin/
 
 ### Setup
 1. Open Android Studio
-2. Navigate to `androidApp/src/main/java/com/base/android/SimpleAndroidPreviews.kt`
+2. Navigate to `androidApp/src/main/java/com/meridia/android/SimpleAndroidPreviews.kt`
 3. The preview panel will show all available previews
 
 ### Available Previews

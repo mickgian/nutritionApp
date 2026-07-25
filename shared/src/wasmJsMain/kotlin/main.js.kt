@@ -1,6 +1,6 @@
 import androidx.compose.runtime.*
-import com.base.shared.CommonView
-import com.base.shared.auth.AuthModule
+import com.meridia.shared.CommonView
+import com.meridia.shared.auth.AuthModule
 import kotlinx.coroutines.launch
 
 

@@ -23,7 +23,7 @@ Instead of Android-specific previews, use the existing preview system in the sha
    ```
 
 2. **Shared Preview Gallery** (Already Working ✅)
-   - Located in `shared/src/commonMain/kotlin/com/base/shared/previews/ScreenPreviews.kt`
+   - Located in `shared/src/commonMain/kotlin/com/meridia/shared/previews/ScreenPreviews.kt`
    - Provides comprehensive preview functionality
    - Works across all platforms
 
@@ -102,8 +102,8 @@ fun SimpleChatPreview() {
 If you specifically need Android Studio previews, here's a minimal working example:
 
 ```kotlin
-// Create this file: androidApp/src/main/java/com/base/android/SimpleAndroidPreviews.kt
-package com.base.android
+// Create this file: androidApp/src/main/java/com/meridia/android/SimpleAndroidPreviews.kt
+package com.meridia.android
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

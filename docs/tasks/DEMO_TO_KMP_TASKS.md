@@ -51,10 +51,10 @@ loading/empty/error/content states.
 `MeridiaTheme` (replace/extend `TravelAppTheme.kt`). Provide reusable components:
 `MeridiaButton` (primary/ghost), `Chip`, `Card`, `EyebrowLabel`, `MacroBadge`.
 **Agents:** @livia (primary), @gioia (review). **Change:** MODIFYING.
-**Files:** `shared/src/commonMain/kotlin/com/base/shared/theme/`, reusable components.
+**Files:** `shared/src/commonMain/kotlin/com/meridia/shared/theme/`, reusable components.
 **Acceptance:** theme applied app-wide; components render on all four targets; matches demo.
 
-### DEV-003: Package & app identity rename (`com.base` → `com.meridia`)
+### DEV-003: Package & app identity rename (`com.base` → `com.meridia`) — ✅ Done
 **Problem:** The scaffold uses the template package/app name ("Base", `com.base`).
 **Solution:** Rename package to `com.meridia`, `rootProject.name` to `Meridia`, app
 labels/bundle ids, and the resource package. Do it as one mechanical RESTRUCTURING pass.

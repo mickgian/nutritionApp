@@ -38,12 +38,11 @@ coordination, and coordinate API contracts with @ezio.
   `collectAsState()` and calls ViewModel functions on user events.
 - **Ktor client** + **kotlinx.serialization** for networking; **kotlinx.coroutines**
   for async (structured concurrency, proper dispatchers).
-- Existing structure under `shared/src/commonMain/kotlin/com/base/shared/`:
+- Existing structure under `shared/src/commonMain/kotlin/com/meridia/shared/`:
   `screens/`, `viewModels/`, `models/`, `network/` (Ktor `HttpClientProvider`,
   repositories), `auth/`, `storage/` (multiplatform `TokenStorage`), `utils/`,
   `MainView.kt`, `TravelAppTheme.kt`.
-- Package root is currently `com.base.shared` (a scheduled task renames it to
-  `com.meridia`; until then, follow the existing package).
+- Package root is `com.meridia.shared` (renamed from the template `com.base` in DEV-003).
 
 ```bash
 ./gradlew :shared:compileKotlinMetadata      # fast compile check (common code)
@@ -167,8 +166,8 @@ states, Italian text, MVVM layering) before it's called complete.
 Task: DEV-XXX — <brief>
 Branch: DEV-XXX-name  ·  Scope: frontend
 Staged:
-- shared/src/commonMain/kotlin/com/base/shared/screens/BoxScreen.kt
-- shared/src/commonMain/kotlin/com/base/shared/viewModels/BoxViewModel.kt
-- shared/src/commonTest/kotlin/com/base/shared/BoxViewModelTest.kt
+- shared/src/commonMain/kotlin/com/meridia/shared/screens/BoxScreen.kt
+- shared/src/commonMain/kotlin/com/meridia/shared/viewModels/BoxViewModel.kt
+- shared/src/commonTest/kotlin/com/meridia/shared/BoxViewModelTest.kt
 Build: ✅ :shared:compileKotlinMetadata   Tests: ✅ :shared:allTests   States: loading/empty/error/content ✅
 ```

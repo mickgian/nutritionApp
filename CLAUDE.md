@@ -26,7 +26,7 @@ A single repo holds both stacks.
 ```
 /                      Gradle Kotlin Multiplatform project (the client)
 ├── shared/            Compose Multiplatform UI + ViewModels + Ktor networking
-│   └── src/commonMain/kotlin/com/base/shared/{screens,viewModels,models,network,auth,storage,utils}
+│   └── src/commonMain/kotlin/com/meridia/shared/{screens,viewModels,models,network,auth,storage,utils}
 ├── androidApp/  iosApp/  webApp/  desktopApp/    KMP targets
 ├── backend/           Python 3.12 + FastAPI service
 │   ├── app/{core,models,schemas,api,services,repositories}

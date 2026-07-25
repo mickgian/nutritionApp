@@ -107,7 +107,7 @@ Common index candidates for Meridia:
 
 ## Frontend Performance (KMP + Compose Multiplatform)
 
-Frontend lives in `shared/src/commonMain/kotlin/com/base/shared/{screens,viewModels,network}`.
+Frontend lives in `shared/src/commonMain/kotlin/com/meridia/shared/{screens,viewModels,network}`.
 
 ### 1. Avoid Unnecessary Recomposition
 - ViewModels expose `StateFlow<UiState>`; collect with `collectAsStateWithLifecycle`

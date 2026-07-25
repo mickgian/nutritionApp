@@ -82,7 +82,7 @@ When a user requests a new feature, conduct a **structured Q&A session** (use th
 
 Before finalizing a task specification, **search the codebase** to identify impact. Backend code
 lives under `backend/app/` (tests under `backend/tests/`); frontend under
-`shared/src/commonMain/kotlin/com/base/shared/`.
+`shared/src/commonMain/kotlin/com/meridia/shared/`.
 
 #### A. Breaking Changes
 - **Database / model changes (SQLModel):**

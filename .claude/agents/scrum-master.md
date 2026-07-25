@@ -104,7 +104,7 @@ coordinate a lightweight lock file:
 **Lock granularity (recommended scopes):**
 - `backend/app/api/v1/<router>.py` + its service/repository/model/schema
 - `backend/alembic/` (migrations — only ONE agent at a time; migrations serialize)
-- `shared/src/commonMain/kotlin/com/base/shared/<area>` (screens/viewModels/models/network)
+- `shared/src/commonMain/kotlin/com/meridia/shared/<area>` (screens/viewModels/models/network)
 
 **Lock record shape (each entry):**
 ```json
