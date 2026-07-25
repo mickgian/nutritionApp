@@ -1,0 +1,113 @@
+{
+  "project": "Meridia — nutrition studio app (KMP + FastAPI monorepo)",
+  "subagents": {
+    "egidio": {
+      "type": "architect",
+      "config_file": "architect.md",
+      "role": "Strategic Architect",
+      "status": "active",
+      "description": "Architecture decisions, tech stack, ADRs, veto power over KMP + FastAPI choices"
+    },
+    "ottavio": {
+      "type": "scrum-master",
+      "config_file": "scrum-master.md",
+      "role": "Sprint Coordinator",
+      "status": "active",
+      "description": "Sprint planning, task coordination, progress tracking, branch-lock coordination"
+    },
+    "ezio": {
+      "type": "backend-expert",
+      "config_file": "backend-expert.md",
+      "role": "Backend Specialist",
+      "status": "configured",
+      "description": "Python, FastAPI, SQLModel, Alembic, PostgreSQL, JWT auth"
+    },
+    "livia": {
+      "type": "frontend-expert",
+      "config_file": "frontend-expert.md",
+      "role": "Frontend Specialist",
+      "status": "configured",
+      "description": "Kotlin Multiplatform, Compose Multiplatform, Ktor, MVVM/ViewModels"
+    },
+    "primo": {
+      "type": "database-designer",
+      "config_file": "database-designer.md",
+      "role": "Database Architect",
+      "status": "configured",
+      "description": "PostgreSQL schema, SQLModel tables, Alembic migrations, indexes, query optimization"
+    },
+    "clelia": {
+      "type": "test-generation",
+      "config_file": "test-generation.md",
+      "role": "Test Engineer",
+      "status": "configured",
+      "description": "pytest (backend) + kotlin.test (KMP), TDD, coverage target >=80% new code"
+    },
+    "severino": {
+      "type": "security-audit",
+      "config_file": "security-audit.md",
+      "role": "Security Auditor",
+      "status": "configured",
+      "description": "GDPR (health data), JWT/auth, per-user data isolation, payment-data & secrets"
+    },
+    "valerio": {
+      "type": "performance-optimizer",
+      "config_file": "performance-optimizer.md",
+      "role": "Performance Engineer",
+      "status": "prepared",
+      "description": "API latency, PostgreSQL query performance, caching, KMP/Compose performance"
+    },
+    "silvano": {
+      "type": "devops",
+      "config_file": "devops.md",
+      "role": "DevOps Engineer",
+      "status": "configured",
+      "description": "GitHub PR creation, GitHub Actions CI/CD, Docker, Gradle/uv builds, monorepo PRs"
+    },
+    "tiziano": {
+      "type": "debugging-expert",
+      "config_file": "debugging-expert.md",
+      "role": "Debugging Specialist",
+      "status": "configured",
+      "description": "Bug investigation & root-cause analysis across FastAPI backend and KMP frontend"
+    },
+    "mario": {
+      "type": "business-analyst",
+      "config_file": "business-analyst.md",
+      "role": "Requirements & Risk Analysis Specialist",
+      "status": "configured",
+      "description": "Interactive requirements elicitation, impact analysis, task specification"
+    },
+    "gioia": {
+      "type": "ux-expert",
+      "config_file": "ux-expert.md",
+      "role": "UX Reviewer",
+      "status": "configured",
+      "description": "End-to-end UX audits of the Italian client & admin flows, prioritized punch-lists"
+    },
+    "collaudatore": {
+      "type": "feature-inspector",
+      "config_file": "feature-inspector.md",
+      "role": "Feature Completion Inspector (terminal quality gate)",
+      "status": "configured",
+      "description": "Grades feature implementations against .claude/rubrics/ YAML; fires before a feature is declared complete; max 4 iterations then escalates"
+    }
+  },
+  "aliases": {
+    "architect": "egidio",
+    "scrum": "ottavio",
+    "backend": "ezio",
+    "frontend": "livia",
+    "database": "primo",
+    "test": "clelia",
+    "security": "severino",
+    "performance": "valerio",
+    "devops": "silvano",
+    "debugging": "tiziano",
+    "business-analyst": "mario",
+    "ba": "mario",
+    "ux": "gioia",
+    "inspector": "collaudatore",
+    "grader": "collaudatore"
+  }
+}

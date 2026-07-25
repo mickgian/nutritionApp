@@ -1,0 +1,52 @@
+---
+id: bug-fix
+name: Bug Fix Rubric (Meridia)
+applies_to:
+  - production bug fix
+  - regression fix
+  - hotfix
+max_iterations: 4
+pass_threshold: "no critical FAIL AND >=80% weighted score"
+criticality_weights:
+  critical: 3
+  high: 2
+  medium: 1
+
+criteria:
+  - id: REGRESSION_TEST
+    criticality: critical
+    msg_it: "Test di regressione che fallisce SENZA il fix e passa CON il fix"
+    check: |
+      - identify the test(s) added by the fix
+      - require >=1 new test that exercises the exact bug condition
+      - if feasible: git stash the fix and run the new test → it must FAIL without the fix,
+        then restore the fix → it must PASS
+      - backend: cd backend && uv run pytest -k <bug>  ·  KMP: ./gradlew :shared:allTests
+
+  - id: NO_HARDCODED_VALUES
+    criticality: high
+    msg_it: "Nessun valore hardcoded; soglie/timeout/prezzi da config o costanti nominate"
+    check: |
+      For the diff:
+      - grep for magic numbers that aren't named constants (prices, limits, timeouts)
+      - confirm new thresholds use settings.X (backend) or a named constant (KMP), not inline literals
+
+  - id: FULL_ERROR_SURFACED
+    criticality: high
+    applies_when: "fix changes error handling or surfaces a previously hidden failure"
+    msg_it: "Errore mostrato per intero all'utente in italiano, mai 'controlla i log'"
+    check: |
+      - the error branch renders the real message (scrollable if long), in Italian
+      - no 'controlla i log' / 'check the logs' placeholder, no silently-swallowed exception
+
+  - id: USER_DATA_ISOLATION
+    criticality: critical
+    msg_it: "Il fix non rompe l'isolamento dei dati per utente (client_id / ruolo admin)"
+    check: same as feature-implementation.yaml USER_DATA_ISOLATION
+
+  - id: ROOT_CAUSE_NOT_SYMPTOM
+    criticality: high
+    msg_it: "Il fix affronta la causa radice, non maschera il sintomo"
+    check: |
+      - read the diff and the linked bug: confirm the change addresses the documented root cause
+      - flag defensive try/except added only to suppress the visible symptom without fixing the cause

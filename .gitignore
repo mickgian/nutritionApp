@@ -24,5 +24,26 @@ shared/shared.podspec
 /secret.properties
 /.kotlin
 
-# Claude Code memory files - keep local only
-CLAUDE.md
+# ---- Backend (Python / FastAPI) ----
+__pycache__/
+*.py[cod]
+.venv/
+backend/.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# ---- Claude Code runtime state ----
+.claude/locks/branch-locks.json
+.claude/locks/grade-skip-*.flag
+.claude/locks/grade-skip.log
+
+# Note: CLAUDE.md, .claude/agents, hooks, rubrics, commands and settings.json ARE
+# committed — they are the shared project configuration.

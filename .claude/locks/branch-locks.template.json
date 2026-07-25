@@ -1,0 +1,29 @@
+{
+  "locks": [
+    {
+      "branch_name": "DEV-XXX-feature-description",
+      "task_id": "DEV-XXX",
+      "subagent": "backend-expert",
+      "subagent_name": "Ezio",
+      "reserved_at": "2026-07-25T14:30:00Z",
+      "reserved_by": "scrum-master",
+      "status": "active",
+      "scope": "backend | frontend | both",
+      "notes": "Example lock entry — this file is a template"
+    }
+  ],
+  "last_updated": "2026-07-25T00:00:00Z",
+  "version": "1.0",
+  "repository": "mickgian/nutritionapp",
+  "description": "Branch reservation system for coordinating parallel subagent work. Managed by the Scrum Master subagent (@Ottavio).",
+  "_usage": {
+    "purpose": "This is a TEMPLATE showing the structure of branch-locks.json",
+    "actual_file": "The real branch-locks.json is gitignored (runtime state)",
+    "initialization": "Copy this template to branch-locks.json to initialize",
+    "lock_statuses": [
+      "active - Branch currently reserved and in use",
+      "completed - Work finished, PR created, ready to clean up",
+      "abandoned - Work stopped, branch can be deleted"
+    ]
+  }
+}

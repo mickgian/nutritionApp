@@ -1,0 +1,159 @@
+---
+id: feature-implementation
+name: Feature Implementation Rubric (Meridia)
+applies_to:
+  - new backend endpoint
+  - new KMP screen / ViewModel
+  - endpoint + screen feature
+  - cross-stack feature
+max_iterations: 4
+pass_threshold: "no critical FAIL AND >=80% weighted score"
+criticality_weights:
+  critical: 3
+  high: 2
+  medium: 1
+
+criteria:
+  - id: API_NO_500
+    criticality: critical
+    msg_it: "L'endpoint non deve restituire 500 su input limite o errore previsto"
+    check: |
+      For every Python file touched under backend/app/api/ and backend/app/services/:
+      - grep for `except:` (bare except) and `except Exception:` without re-raise → FAIL
+      - grep for `.one()` / `session.get(...)` used without a None/not-found guard → FAIL
+      - confirm pagination params (limit/offset/page) have bounds validation (Query(..., ge=1, le=N))
+      - confirm every raise HTTPException uses status_code in [400, 401, 403, 404, 409, 422]
+      - run: cd backend && uv run pytest -k "<feature> and (edge or invalid or empty or null)" -v → >=1 passing edge test
+    evidence_required:
+      - "file:line of each except clause that catches more than the specific error"
+      - "test file:test_name covering empty/null/oversized input"
+
+  - id: UI_PRESENT
+    criticality: critical
+    msg_it: "La schermata/ViewModel KMP esiste, è raggiungibile e chiama l'endpoint"
+    check: |
+      If a new endpoint exists under backend/app/api/, the KMP client MUST consume it:
+      - find a repository method in shared/src/commonMain/kotlin/**/network/ that calls the new route path
+      - find a ViewModel that exposes the state and a @Composable screen that renders it
+      - if no KMP code touches the new endpoint → FAIL (backend shipping ahead of the app is a recurring sin)
+    evidence_required:
+      - "file:line of the Ktor client call to the new endpoint (route path)"
+      - "route path appears in both the backend router and the KMP repository"
+
+  - id: NAV_ENTRY
+    criticality: high
+    msg_it: "La nuova schermata è raggiungibile dalla navigazione (tab bar o navigazione padre)"
+    check: |
+      For every new @Composable screen added in this diff:
+      - confirm it is wired into the app navigation (MainView / tab bar / NavHost) OR reachable
+        via an explicit navigation call from a parent screen that IS in the nav
+      - if the screen is defined but never navigated to → FAIL
+    evidence_required:
+      - "file:line where the screen is added to navigation or pushed from a parent"
+
+  - id: UX_STATES
+    criticality: critical
+    msg_it: "Stati loading / empty / error coperti tutti con UI visibile (mai schermo bianco)"
+    check: |
+      For every ViewModel/screen that loads data in this diff:
+      - the UiState models loading, empty, error, and content (e.g. sealed interface UiState)
+      - the @Composable renders a visible branch for EACH state (spinner, empty message, error message)
+      - error branch shows the actual error text — never a blank screen or a silent catch
+    evidence_required:
+      - "file:line of the loading branch"
+      - "file:line of the empty-state branch"
+      - "file:line of the error branch that renders the message"
+
+  - id: ITALIAN_TEXT
+    criticality: high
+    msg_it: "Tutti i nuovi testi UI sono in italiano (CLAUDE.md regola critica)"
+    check: |
+      For every touched .kt file that contains user-facing strings (Text("..."), labels, error copy):
+      - flag English words in visible string literals
+      - allowed: technical identifiers, log messages, test names, API field keys
+      Also check API error `detail=` strings in touched backend files are Italian.
+
+  - id: USER_DATA_ISOLATION
+    criticality: critical
+    msg_it: "Ogni query filtra per proprietario (client_id) e gli endpoint studio richiedono ruolo admin"
+    check: |
+      For every new/changed repository method and route handler under backend/app/:
+      - read the query — confirm it filters by the caller's client_id (WHERE client_id = current_user.id)
+        for client-owned resources (appointments, orders, plan, notifications, credits)
+      - flag any `session.get(Model, id)` or `.where(Model.id == id)` that returns another user's row
+        without an ownership check
+      - confirm studio-only endpoints depend on require_admin / AdminUser
+    evidence_required:
+      - "file:line of the ownership filter or the require_admin dependency"
+
+  - id: TESTS_BEYOND_HAPPY
+    criticality: high
+    msg_it: "Almeno 3 test: happy path + errore 4xx + edge (vuoto/null/limite/isolamento)"
+    check: |
+      - run: cd backend && uv run pytest -k <feature> --collect-only -q → count tests
+      - require >=3 distinct test functions covering: success, a 4xx error, and an edge/isolation case
+      - run: cd backend && uv run pytest -k <feature> --cov=app --cov-report=term-missing
+        → coverage on touched files >= 80%
+      - for KMP work, require a ViewModel/repository test (./gradlew :shared:allTests) exercising success + error
+
+  - id: SQLMODEL_ONLY
+    criticality: high
+    msg_it: "Solo SQLModel, niente SQLAlchemy declarative_base"
+    check: |
+      For every touched .py file:
+      - grep for "from sqlalchemy.orm import declarative_base" → FAIL
+      - grep for "class .*\\(Base\\):" declaring a table → FAIL
+      - allowed: from sqlalchemy import text, select, func (helpers, not the ORM Base)
+
+  - id: MVVM_LAYERING
+    criticality: high
+    msg_it: "Nessuna logica di business o chiamata di rete dentro i @Composable"
+    check: |
+      For every touched @Composable in this diff:
+      - no direct Ktor/HttpClient calls, no repository instantiation, no business rules inside composition
+      - the screen collects state from a ViewModel (collectAsState) and calls ViewModel functions on events
+    evidence_required:
+      - "file:line where a Composable performs I/O or business logic (if any)"
+
+  - id: CODE_SIZE
+    criticality: medium
+    msg_it: "Limiti CLAUDE.md rispettati (route <30, service <200, file <400, screen <250, composable <120, ViewModel <200)"
+    check: |
+      For every touched file, wc -l / function length vs the limit table:
+      - backend/app/api/**/*.py route handlers: <30 lines each
+      - backend/app/services/**/*.py classes/files: <200/400 lines
+      - shared/**/screens/*.kt: <250 lines; single @Composable: <120 lines
+      - shared/**/viewModels/*.kt: <200 lines
+
+  - id: STRUCTURED_LOGGING
+    criticality: medium
+    msg_it: "Log strutturati con contesto (user_id, operation), niente print()"
+    check: |
+      For every touched backend .py file:
+      - grep for `print(` → FAIL (use structlog logger)
+      - confirm error log calls include identifying context (user_id, operation, error_type)
+
+  - id: MIGRATION_SAFE
+    criticality: critical
+    applies_when: "backend/alembic/versions/ contains added or modified files in this diff"
+    msg_it: "Migrazione applicabile e reversibile (upgrade+downgrade), drift check verde"
+    check: |
+      - run: cd backend && uv run alembic upgrade head (must succeed on a clean DB)
+      - run: cd backend && uv run alembic downgrade -1 then upgrade head (reversible)
+      - grep migration for op.drop_column/op.drop_table/op.alter_column(type_=)
+        → if destructive, require a "# REVIEWED: expand-contract" comment explaining data preservation
+
+  - id: ACCESSIBILITY
+    criticality: medium
+    msg_it: "contentDescription su icone/immagini, target touch adeguati, focus visibile"
+    check: |
+      For every touched .kt screen:
+      - Icon()/Image() that convey meaning have a non-null contentDescription
+      - icon-only clickable elements have an accessible label
+      - interactive targets are not smaller than ~48dp
+
+# Output contract reminder for the grader agent:
+# - Final line MUST be: "VERDICT: PASS" or "VERDICT: FAIL" or "VERDICT: ESCALATE"
+# - PASS requires: no critical FAIL AND weighted_score >= 0.80
+# - ESCALATE only on iteration 4 with FAIL
+# - Remediation list in Italian, keyed by file:line
