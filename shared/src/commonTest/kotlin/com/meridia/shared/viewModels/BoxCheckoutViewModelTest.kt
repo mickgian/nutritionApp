@@ -85,10 +85,11 @@ class BoxCheckoutViewModelTest {
     fun place_is_ignored_once_order_is_placed() = runTest {
         val repo = FakeOrderRepository(createResult = placed)
         val vm = BoxCheckoutViewModel(repo)
+        vm.selectFormula(OrderFormula.Single)
         vm.place()
         advanceUntilIdle()
         assertTrue(vm.state.value.placedOrder != null)
-        // A second tap must not re-submit.
+        // A second tap (even after changing the formula) must not re-submit.
         vm.selectFormula(OrderFormula.Subscription)
         vm.place()
         advanceUntilIdle()
