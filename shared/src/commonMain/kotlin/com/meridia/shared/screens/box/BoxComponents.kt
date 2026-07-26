@@ -4,18 +4,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.meridia.shared.models.BoxItemDto
@@ -34,16 +39,25 @@ fun WeekdayStrip(selected: Int, onSelect: (Int) -> Unit) {
     ) {
         WEEKDAYS.forEachIndexed { index, label ->
             val active = index == selected
-            Text(
-                label,
+            Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(99.dp))
                     .background(if (active) colors.verde else colors.salvia)
-                    .clickable { onSelect(index) }
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                color = if (active) colors.bianco else colors.verde,
-                style = MeridiaTheme.typography.labelLarge,
-            )
+                    .selectable(
+                        selected = active,
+                        role = Role.Tab,
+                        onClick = { onSelect(index) },
+                    )
+                    .heightIn(min = 48.dp)
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    label,
+                    color = if (active) colors.bianco else colors.verde,
+                    style = MeridiaTheme.typography.labelLarge,
+                )
+            }
         }
     }
 }
@@ -135,7 +149,12 @@ fun DayMeals(items: List<BoxItemDto>, onMealClick: (Int) -> Unit) {
 private fun MealCard(label: String, item: BoxItemDto, onMealClick: (Int) -> Unit) {
     val colors = MeridiaTheme.colors
     val meal = item.meal
-    MeridiaCard(modifier = Modifier.clickable { onMealClick(meal.id) }) {
+    MeridiaCard(
+        modifier = Modifier.clickable(
+            onClickLabel = "Apri il dettaglio del pasto",
+            role = Role.Button,
+        ) { onMealClick(meal.id) },
+    ) {
         Text(label.uppercase(), style = MeridiaTheme.typography.labelMedium, color = colors.grigio)
         Spacer(Modifier.height(4.dp))
         Text(
