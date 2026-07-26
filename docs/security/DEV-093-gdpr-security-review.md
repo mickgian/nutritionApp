@@ -58,6 +58,11 @@ would drop the `ecdsa` dependency entirely and move onto a more actively
 maintained library. This is an architectural change (needs @egidio) and is
 tracked separately.
 
+> **Resolved — DEV-096 (ADR-004).** JWT handling now uses `PyJWT`; `python-jose`
+> and its `ecdsa`/`rsa`/`pyasn1` chain are removed. `pip-audit` reports **no known
+> vulnerabilities**. HS256, claims, and the fail-closed decode contract are
+> unchanged.
+
 ### Frontend — Gradle
 Could not run in this environment (Gradle is offline/proxy-blocked here; see the
 DEV-001 KMP CI notes). **Recommendation:** enable Dependabot for Gradle and/or add

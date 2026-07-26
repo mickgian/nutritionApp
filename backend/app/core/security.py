@@ -2,12 +2,15 @@
 
 Auth model: JWT access tokens (HS256). Passwords hashed with bcrypt via passlib.
 Roles: ``cliente`` (default) and ``admin``. Never store plaintext passwords.
+
+JWTs are handled by PyJWT (see ADR-004): HS256 uses no elliptic-curve code, so
+the library carries no ``ecdsa`` dependency.
 """
 
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from jose import JWTError, jwt
+import jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
@@ -36,14 +39,15 @@ def decode_token(token: str) -> dict[str, Any] | None:
     """Decode and validate a JWT. Returns the claims or ``None`` if invalid.
 
     Requires both ``exp`` and ``sub``: a token missing an expiry (a
-    never-expiring token) or a subject is rejected rather than trusted.
+    never-expiring token) or a subject is rejected rather than trusted. An
+    expired or tampered token is likewise rejected.
     """
     try:
         return jwt.decode(
             token,
             settings.secret_key,
             algorithms=[settings.jwt_algorithm],
-            options={"require_exp": True, "require_sub": True},
+            options={"require": ["exp", "sub"]},
         )
-    except JWTError:
+    except jwt.PyJWTError:
         return None
