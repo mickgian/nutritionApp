@@ -140,7 +140,7 @@ reviews). Seed Dott.ssa Serra + demo reviews. **Agents:** @ezio, @livia, @primo.
 
 ## Epic 3 — Nutrition plans & meal box
 
-### DEV-030: Nutrition plan assignment (admin) + client view
+### DEV-030: Nutrition plan assignment (admin) + client view — ✅ Done (backend)
 **Problem:** The box is unlocked only after the studio assigns a plan (persona `new`
 sees a locked state).
 **Solution:** `NutritionPlan` (name, kcal, weeks). Admin: `POST /api/v1/admin/clients/{id}/plan`.
@@ -166,6 +166,7 @@ conservazione, riscaldamento. **Agents:** @livia, @ezio. **Change:** ADDITIVE.
 **Problem:** The box screen has three states by persona (locked / orderable / ordered).
 **Solution:** `BoxViewModel` composing plan + order status; renders locked (no plan),
 orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
+**Consumes (DEV-030):** `GET /api/v1/me/plan` (404 → locked state).
 **Agents:** @livia (primary), @gioia. **Change:** ADDITIVE.
 **Acceptance:** all three states correct per backend data; deadline copy; NAV from Box tab.
 
@@ -256,6 +257,7 @@ orders, and sends promotions.
 DEV-020, plan assignment from DEV-030, `GET /api/v1/admin/orders`, `POST /api/v1/admin/promotions`).
 Gate the whole area behind the `admin` role in the client and enforce on the server.
 **Consumes (DEV-020):** `GET /api/v1/admin/availability`, `PUT /api/v1/admin/availability`.
+**Consumes (DEV-030):** `POST /api/v1/admin/clients/{client_id}/plan`.
 **Agents:** @livia, @ezio, @severino (role enforcement), @gioia, @clelia. **Change:** ADDITIVE.
 **Acceptance:** admin-only access (client + server); each panel action works; isolation/role tested.
 

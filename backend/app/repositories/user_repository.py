@@ -17,6 +17,9 @@ class UserRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
+    def get_by_id(self, user_id: int) -> User | None:
+        return self.session.get(User, user_id)
+
     def get_by_email(self, email: str) -> User | None:
         stmt = select(User).where(User.email == normalize_email(email))
         return self.session.exec(stmt).first()
