@@ -162,7 +162,7 @@ and `MealBox`/`BoxItem` linking meals to a plan + week + day. `GET /api/v1/me/bo
 conservazione, riscaldamento. **Agents:** @livia, @ezio. **Change:** ADDITIVE.
 **Acceptance:** detail renders; reachable from the box; Italian copy; loading/error states.
 
-### DEV-033: Box screen with locked/ordered/orderable states (KMP)
+### DEV-033: Box screen with locked/ordered/orderable states (KMP) — ✅ Done (locked + orderable; ordered deferred to DEV-040)
 **Problem:** The box screen has three states by persona (locked / orderable / ordered).
 **Solution:** `BoxViewModel` composing plan + order status; renders locked (no plan),
 orderable (deadline banner + "Ordina"), or ordered (in-preparation card).

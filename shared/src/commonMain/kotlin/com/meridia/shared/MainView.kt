@@ -32,6 +32,7 @@ import com.meridia.shared.screens.LoginScreen
 import com.meridia.shared.screens.RegistrationScreen
 import com.meridia.shared.screens.SessionListScreen
 import com.meridia.shared.screens.booking.BookingScreen
+import com.meridia.shared.screens.box.BoxScreen
 import com.meridia.shared.viewModels.RegistrationViewModel
 import com.meridia.shared.viewModels.SessionViewModel
 import kotlinx.coroutines.launch
@@ -110,6 +111,7 @@ fun CommonView() {
                         scope.launch { AuthModule.getAuthManager().logout() }
                         nav.navigate("Login") { popUpTo("Consulenza") { inclusive = true } }
                     },
+                    onOpenBox = { nav.navigate("Box") },
                 )
             }
 
@@ -119,6 +121,11 @@ fun CommonView() {
                     onClose = { nav.popBackStack() },
                     onBooked = { nav.popBackStack() },
                 )
+            }
+
+            /* ---------------- BOX (weekly meal box) ---------------- */
+            composable("Box") {
+                BoxScreen(onClose = { nav.popBackStack() })
             }
 
 

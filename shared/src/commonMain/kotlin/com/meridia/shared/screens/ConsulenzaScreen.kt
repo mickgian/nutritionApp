@@ -30,6 +30,7 @@ import com.meridia.shared.models.ReviewDto
 import com.meridia.shared.theme.MeridiaTheme
 import com.meridia.shared.theme.components.EyebrowLabel
 import com.meridia.shared.theme.components.MeridiaButton
+import com.meridia.shared.theme.components.MeridiaButtonStyle
 import com.meridia.shared.theme.components.MeridiaCard
 import com.meridia.shared.viewModels.ConsulenzaUiState
 import com.meridia.shared.viewModels.ConsulenzaViewModel
@@ -44,6 +45,7 @@ import kotlin.math.round
 fun ConsulenzaScreen(
     onBook: () -> Unit,
     onLogout: () -> Unit,
+    onOpenBox: () -> Unit,
     vm: ConsulenzaViewModel = remember { ConsulenzaViewModel() },
 ) {
     val state by vm.state.collectAsState()
@@ -85,6 +87,13 @@ fun ConsulenzaScreen(
                 ReviewsSection(reviews = s.professional.reviews)
             }
         }
+
+        Spacer(Modifier.height(20.dp))
+        MeridiaButton(
+            "Il tuo box settimanale",
+            onClick = onOpenBox,
+            style = MeridiaButtonStyle.Ghost,
+        )
     }
 }
 

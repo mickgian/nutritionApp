@@ -1,0 +1,64 @@
+package com.meridia.shared.viewModels
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.meridia.shared.auth.AuthModule
+import com.meridia.shared.models.BoxDto
+import com.meridia.shared.models.PlanDto
+import com.meridia.shared.network.BoxRepository
+import com.meridia.shared.network.BoxRepositoryImpl
+import com.meridia.shared.utils.ErrorHandler
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+/**
+ * State of the weekly box screen.
+ *
+ * `Locked` is the persona-`new` state (no plan assigned). `Content` is the
+ * orderable state (plan + weekly menu). The `ordered` (in-preparation) state
+ * arrives with order data in Epic 4 (DEV-040).
+ */
+sealed interface BoxUiState {
+    data object Loading : BoxUiState
+    data object Locked : BoxUiState
+    data class Error(val message: String) : BoxUiState
+    data class Content(
+        val plan: PlanDto,
+        val box: BoxDto,
+        val selectedWeekday: Int = 0,
+    ) : BoxUiState
+}
+
+class BoxViewModel(private val repo: BoxRepository? = null) : ViewModel() {
+
+    private val _state = MutableStateFlow<BoxUiState>(BoxUiState.Loading)
+    val state: StateFlow<BoxUiState> = _state.asStateFlow()
+
+    private fun repository(): BoxRepository =
+        repo ?: BoxRepositoryImpl(authManager = AuthModule.getAuthManager())
+
+    fun load() {
+        _state.value = BoxUiState.Loading
+        viewModelScope.launch {
+            runCatching {
+                val plan = repository().myPlan() ?: return@runCatching null
+                plan to repository().box(0)
+            }
+                .onSuccess { result ->
+                    _state.value =
+                        if (result == null) BoxUiState.Locked
+                        else BoxUiState.Content(plan = result.first, box = result.second)
+                }
+                .onFailure {
+                    _state.value = BoxUiState.Error(ErrorHandler.handleHttpError(it))
+                }
+        }
+    }
+
+    fun selectWeekday(weekday: Int) {
+        val content = _state.value as? BoxUiState.Content ?: return
+        _state.value = content.copy(selectedWeekday = weekday)
+    }
+}
