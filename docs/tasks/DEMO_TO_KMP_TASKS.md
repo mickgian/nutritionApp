@@ -217,7 +217,7 @@ slot → 409. **Edge:** cancel someone else's appt (403/404), credit expiry. **T
 
 ## Epic 6 — Notifications
 
-### DEV-060: Notifications backend + profiling rules
+### DEV-060: Notifications backend + profiling rules — ✅ Done
 **Problem:** The demo lists behavior-profiled notifications (reminders, order deadline,
 box ready, post-consult proposal, win-back, 8-box check-up, birthday, promos).
 **Solution:** `Notification` model + `GET /api/v1/me/notifications`. Generation rules
@@ -228,6 +228,7 @@ service; delivery via push is a later integration (out of scope here — model +
 
 ### DEV-061: Notifications screen (KMP)
 **Solution:** `NotificationsViewModel` + list screen; unread dot on the tab. Italian copy.
+**Consumes (DEV-060):** `GET /api/v1/me/notifications` (the client's own notifications).
 **Agents:** @livia, @gioia. **Change:** ADDITIVE.
 **Acceptance:** list renders; empty/error states; NAV dot behavior.
 

@@ -10,6 +10,7 @@ from app.api.v1 import (
     credit,
     health,
     meals,
+    notifications,
     orders,
     plans,
     professional,
@@ -25,4 +26,5 @@ api_router.include_router(box.router)
 api_router.include_router(meals.router)
 api_router.include_router(orders.router)
 api_router.include_router(credit.router)
+api_router.include_router(notifications.router)
 api_router.include_router(health.router, tags=["health"])

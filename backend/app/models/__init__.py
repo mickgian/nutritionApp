@@ -9,6 +9,7 @@ from app.models.availability import AvailabilitySlot  # noqa: F401
 from app.models.credit import Credit  # noqa: F401
 from app.models.meal import Meal  # noqa: F401
 from app.models.meal_box import BoxItem, MealBox  # noqa: F401
+from app.models.notification import Notification  # noqa: F401
 from app.models.nutrition_plan import NutritionPlan  # noqa: F401
 from app.models.order import Order  # noqa: F401
 from app.models.professional import Professional  # noqa: F401
