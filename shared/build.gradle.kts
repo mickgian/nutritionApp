@@ -134,6 +134,12 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.0"
     }
+    testOptions {
+        // ViewModels log via android.util.Log; in JVM unit tests the stubbed
+        // android.jar throws "not mocked" RuntimeExceptions. Return defaults so
+        // Logger calls are harmless no-ops under :shared:testDebugUnitTest.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 @Suppress("TooGenericExceptionCaught")
