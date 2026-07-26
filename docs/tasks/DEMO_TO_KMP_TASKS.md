@@ -125,6 +125,7 @@ concurrent booking of the same slot (409). **Tests:** happy, 409 taken, 404, iso
 by `/availability`; a summary step; a payment step (see Epic 7). Confirmation on success.
 **Agents:** @livia (primary), @gioia (UX), @clelia. **Change:** ADDITIVE.
 **Files:** `screens/booking/*`, `viewModels/BookingViewModel.kt`, `network/AppointmentRepository.kt`.
+**Consumes (DEV-021):** `GET /api/v1/availability`, `POST /api/v1/appointments`, `GET /api/v1/appointments`.
 **UX states:** loading slots, empty (no availability), error, per-step validation
 (continue disabled until valid). All copy Italian. **Cancellation terms** shown (48h rule).
 **Acceptance:** end-to-end booking against backend; all states rendered; NAV entry from Consulenza tab.
@@ -254,6 +255,7 @@ orders, and sends promotions.
 **Solution:** Admin-only screens backed by `admin/*` endpoints (availability from
 DEV-020, plan assignment from DEV-030, `GET /api/v1/admin/orders`, `POST /api/v1/admin/promotions`).
 Gate the whole area behind the `admin` role in the client and enforce on the server.
+**Consumes (DEV-020):** `GET /api/v1/admin/availability`, `PUT /api/v1/admin/availability`.
 **Agents:** @livia, @ezio, @severino (role enforcement), @gioia, @clelia. **Change:** ADDITIVE.
 **Acceptance:** admin-only access (client + server); each panel action works; isolation/role tested.
 

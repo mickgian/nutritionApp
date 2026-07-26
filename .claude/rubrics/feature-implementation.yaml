@@ -30,20 +30,26 @@ criteria:
 
   - id: UI_PRESENT
     criticality: critical
-    applies_when: "this diff adds or modifies KMP client code under shared/src (screens, viewModels, or network). Phased backend-first delivery is allowed: a backend-only diff whose KMP consumer is a separately tracked task in docs/tasks/DEMO_TO_KMP_TASKS.md defers this check to that UI task (e.g. DEV-020/DEV-021 booking backend → DEV-022 booking wizard)."
+    applies_when: "this diff adds or modifies KMP client code under shared/src (screens, viewModels, or network). A backend-only diff (no shared/src files) defers this check ONLY when every new endpoint route path it adds is named verbatim by a tracked consumer task in docs/tasks/DEMO_TO_KMP_TASKS.md; otherwise the criterion applies and the missing/dead endpoint FAILs."
     msg_it: "La schermata/ViewModel KMP esiste, è raggiungibile e chiama l'endpoint"
     check: |
       When KMP client code is in scope, the endpoint it targets MUST be consumed end-to-end:
       - find a repository method in shared/src/commonMain/kotlin/**/network/ that calls the route path
       - find a ViewModel that exposes the state and a @Composable screen that renders it
       - if the KMP diff adds a screen/ViewModel that does NOT reach a real endpoint → FAIL
-      Guard against "backend shipping ahead of the app": for a backend-only diff (no KMP files),
-      confirm the new endpoint has a paired KMP consumer task in docs/tasks/DEMO_TO_KMP_TASKS.md.
-      If no such task exists → FAIL (the endpoint would be dead code). The paired UI task is where
-      this criterion is actually enforced against a live Ktor call.
+
+      Phased backend-first delivery (backend-only diff) is deferred, NOT waived, and the link
+      must be VERIFIABLE — a task title is not enough:
+      - list every new route path added in this diff (e.g. GET /api/v1/availability,
+        POST /api/v1/appointments)
+      - for EACH path, grep docs/tasks/DEMO_TO_KMP_TASKS.md for a task that names that exact
+        path in its "Consumes:" line (or body). Match the literal path, not just a keyword.
+      - any new endpoint with NO tracked consumer naming its path → FAIL (dead code); the
+        deferral is only legitimate when the ledger explicitly commits a UI task to that path.
+      The paired UI task is where this criterion is enforced against a live Ktor call.
     evidence_required:
       - "file:line of the Ktor client call to the endpoint (route path), OR"
-      - "the docs/tasks entry that tracks the KMP consumer for a backend-only endpoint"
+      - "the docs/tasks line naming the exact route path of each deferred endpoint"
 
   - id: NAV_ENTRY
     criticality: high
