@@ -162,7 +162,7 @@ and `MealBox`/`BoxItem` linking meals to a plan + week + day. `GET /api/v1/me/bo
 conservazione, riscaldamento. **Agents:** @livia, @ezio. **Change:** ADDITIVE.
 **Acceptance:** detail renders; reachable from the box; Italian copy; loading/error states.
 
-### DEV-033: Box screen with locked/ordered/orderable states (KMP) — ✅ Done (locked + orderable; ordered deferred to DEV-040)
+### DEV-033: Box screen with locked/ordered/orderable states (KMP) — ✅ Done (locked + orderable; ordered state added in DEV-041)
 **Problem:** The box screen has three states by persona (locked / orderable / ordered).
 **Solution:** `BoxViewModel` composing plan + order status; renders locked (no plan),
 orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
@@ -184,7 +184,7 @@ orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
 **Edge:** duplicate active subscription, isolation, invalid plan/pickup. **Tests:** happy,
 403 no-plan, 422, isolation, edge. **Acceptance:** ≥80% coverage; ownership; correct pricing.
 
-### DEV-041: Box checkout (KMP)
+### DEV-041: Box checkout (KMP) — ✅ Done
 **Problem:** The demo's checkout sheet (formula + pickup + pay) must be real.
 **Solution:** `BoxCheckoutViewModel`; formula selector, pickup selector, total, payment
 (Epic 7); success → box marked ordered. **Agents:** @livia, @gioia, @clelia. **Change:** ADDITIVE.

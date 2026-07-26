@@ -64,6 +64,38 @@ fun DeadlineBanner() {
 }
 
 @Composable
+fun OrderedBanner(pickup: String, formula: String) {
+    val colors = MeridiaTheme.colors
+    MeridiaCard {
+        Text(
+            "📦 Box in preparazione",
+            style = MeridiaTheme.typography.titleMedium,
+            color = colors.inchiostro,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Ritiro lunedì in studio · fascia ${pickupLabel(pickup)}. Ti avvisiamo " +
+                "lunedì mattina quando il box è pronto.",
+            style = MeridiaTheme.typography.bodyMedium,
+            color = colors.grigio,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            if (formula == "subscription") "Abbonamento attivo" else "Ordine singolo",
+            style = MeridiaTheme.typography.labelMedium,
+            color = colors.verde,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+private fun pickupLabel(pickup: String): String = when (pickup) {
+    "mattina" -> "mattina 8:30-12:30"
+    "pomeriggio" -> "pomeriggio 15:00-19:00"
+    else -> pickup
+}
+
+@Composable
 fun LockedBox() {
     val colors = MeridiaTheme.colors
     MeridiaCard {

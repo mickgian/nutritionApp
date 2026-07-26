@@ -32,6 +32,7 @@ import com.meridia.shared.screens.LoginScreen
 import com.meridia.shared.screens.RegistrationScreen
 import com.meridia.shared.screens.SessionListScreen
 import com.meridia.shared.screens.booking.BookingScreen
+import com.meridia.shared.screens.box.BoxCheckoutScreen
 import com.meridia.shared.screens.box.BoxScreen
 import com.meridia.shared.screens.meal.MealDetailScreen
 import com.meridia.shared.viewModels.RegistrationViewModel
@@ -129,6 +130,16 @@ fun CommonView() {
                 BoxScreen(
                     onClose = { nav.popBackStack() },
                     onOpenMeal = { mealId -> nav.navigate("MealDetail/$mealId") },
+                    onOrder = { nav.navigate("BoxCheckout") },
+                )
+            }
+
+            /* ---------------- BOX checkout ---------------- */
+            composable("BoxCheckout") {
+                BoxCheckoutScreen(
+                    onClose = { nav.popBackStack() },
+                    // Re-enter Box fresh so it reloads and shows the ordered state.
+                    onOrdered = { nav.navigate("Box") { popUpTo("Box") { inclusive = true } } },
                 )
             }
 

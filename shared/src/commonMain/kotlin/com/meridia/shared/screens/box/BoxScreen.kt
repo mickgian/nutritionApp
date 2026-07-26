@@ -20,9 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -35,13 +33,15 @@ import com.meridia.shared.viewModels.BoxViewModel
 
 /**
  * The weekly meal box. Renders loading / locked (no plan) / error / content
- * (orderable) states from GET /api/v1/me/plan + /me/box (DEV-033). The "ordered"
- * in-preparation state and the real checkout arrive with Epic 4 (DEV-040/041).
+ * states from GET /api/v1/me/plan + /me/box + /orders. Content is either
+ * orderable (deadline banner + "Ordina" → checkout) or ordered (in-preparation
+ * banner), per the client's order status (DEV-033 + DEV-041).
  */
 @Composable
 fun BoxScreen(
     onClose: () -> Unit,
     onOpenMeal: (Int) -> Unit,
+    onOrder: () -> Unit,
     vm: BoxViewModel = remember { BoxViewModel() },
 ) {
     val state by vm.state.collectAsState()
@@ -73,6 +73,7 @@ fun BoxScreen(
                 content = s,
                 onSelectWeekday = vm::selectWeekday,
                 onOpenMeal = onOpenMeal,
+                onOrder = onOrder,
             )
         }
     }
@@ -83,9 +84,9 @@ private fun BoxContent(
     content: BoxUiState.Content,
     onSelectWeekday: (Int) -> Unit,
     onOpenMeal: (Int) -> Unit,
+    onOrder: () -> Unit,
 ) {
     val colors = MeridiaTheme.colors
-    var showOrderNote by remember { mutableStateOf(false) }
     Text(
         content.plan.name,
         style = MeridiaTheme.typography.displaySmall,
@@ -97,7 +98,12 @@ private fun BoxContent(
         color = colors.grigio,
     )
     Spacer(Modifier.height(14.dp))
-    DeadlineBanner()
+    val order = content.order
+    if (order != null) {
+        OrderedBanner(pickup = order.pickup, formula = order.formula)
+    } else {
+        DeadlineBanner()
+    }
     Spacer(Modifier.height(14.dp))
     WeekdayStrip(selected = content.selectedWeekday, onSelect = onSelectWeekday)
     Spacer(Modifier.height(14.dp))
@@ -105,15 +111,9 @@ private fun BoxContent(
         items = content.box.items.filter { it.weekday == content.selectedWeekday },
         onMealClick = onOpenMeal,
     )
-    Spacer(Modifier.height(18.dp))
-    MeridiaButton("Ordina il box", onClick = { showOrderNote = true })
-    if (showOrderNote) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Il pagamento del box sarà disponibile a breve.",
-            style = MeridiaTheme.typography.bodyMedium,
-            color = colors.arancio,
-        )
+    if (order == null) {
+        Spacer(Modifier.height(18.dp))
+        MeridiaButton("Ordina il box · da € 79", onClick = onOrder)
     }
 }
 
