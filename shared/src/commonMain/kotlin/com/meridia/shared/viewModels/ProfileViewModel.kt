@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * The profilo tab: aggregates the client's own data from /me/* — upcoming
+ * The profilo tab: aggregates the client's own data from the /me endpoints — upcoming
  * appointment, active credits, plan, and box orders — and drives the cancel
  * action (with the 48h credit messaging, DEV-050/051) plus the GDPR
  * export/erasure self-service (DEV-093).

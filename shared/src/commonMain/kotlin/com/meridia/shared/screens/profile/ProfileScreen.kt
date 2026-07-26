@@ -45,7 +45,7 @@ private const val POLICY =
 /**
  * The profilo tab (DEV-051): upcoming appointment (with cancel + 48h messaging),
  * active credits, plan/box summary, and studio info. Renders loading / error /
- * content states from /me/* (aggregated by [ProfileViewModel]).
+ * content states from the /me endpoints (aggregated by [ProfileViewModel]).
  */
 @Composable
 fun ProfileScreen(
