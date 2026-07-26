@@ -30,7 +30,7 @@ fun BookingStepBody(
             when (content.step) {
                 BookingStep.Slot -> SlotStep(content, vm)
                 BookingStep.Riepilogo -> RiepilogoStep(content)
-                BookingStep.Pagamento -> PagamentoStep(content)
+                BookingStep.Pagamento -> PagamentoStep(content, vm)
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -49,11 +49,8 @@ private fun StepFooter(content: BookingUiState.Content, vm: BookingViewModel) {
 
         BookingStep.Riepilogo -> MeridiaButton("Vai al pagamento", onClick = vm::next)
 
-        BookingStep.Pagamento -> MeridiaButton(
-            if (content.submitting) "Attendere…" else "Conferma e paga ${euro(content.visitType.priceCents)}",
-            onClick = vm::confirm,
-            enabled = !content.submitting,
-        )
+        // The payment step's actions live in the PaymentPanel (one button per method).
+        BookingStep.Pagamento -> Unit
     }
 }
 

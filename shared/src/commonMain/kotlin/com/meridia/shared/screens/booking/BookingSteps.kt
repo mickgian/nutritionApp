@@ -18,11 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.meridia.shared.models.VisitTypeUi
+import com.meridia.shared.screens.payment.PaymentPanel
 import com.meridia.shared.theme.MeridiaRadius
 import com.meridia.shared.theme.MeridiaTheme
 import com.meridia.shared.theme.components.EyebrowLabel
-import com.meridia.shared.theme.components.MeridiaButton
-import com.meridia.shared.theme.components.MeridiaButtonStyle
 import com.meridia.shared.theme.components.MeridiaCard
 import com.meridia.shared.viewModels.BookingUiState
 import com.meridia.shared.viewModels.BookingViewModel
@@ -97,24 +96,11 @@ fun RiepilogoStep(content: BookingUiState.Content) {
 }
 
 @Composable
-fun PagamentoStep(content: BookingUiState.Content) {
-    val colors = MeridiaTheme.colors
-    EyebrowLabel("Pagamento")
-    Spacer(Modifier.height(8.dp))
-    MeridiaCard { LabeledRow("Totale", euro(content.visitType.priceCents)) }
-    Text("Metodo di pagamento", style = MeridiaTheme.typography.titleMedium, color = colors.inchiostro)
-    Spacer(Modifier.height(8.dp))
-    listOf("Apple Pay", "Google Pay", "Carta di credito").forEach { method ->
-        MeridiaButton(method, onClick = {}, style = MeridiaButtonStyle.Ghost, enabled = false)
-        Spacer(Modifier.height(8.dp))
-    }
-    Text(
-        "Il pagamento sarà attivato a breve; per ora la prenotazione resta in attesa di pagamento.",
-        style = MeridiaTheme.typography.bodySmall,
-        color = colors.grigio,
+fun PagamentoStep(content: BookingUiState.Content, vm: BookingViewModel) {
+    PaymentPanel(
+        amountCents = content.visitType.priceCents,
+        processing = content.submitting,
+        error = content.submitError,
+        onPay = vm::pay,
     )
-    if (content.submitError != null) {
-        Spacer(Modifier.height(8.dp))
-        Text(content.submitError, color = colors.arancio, style = MeridiaTheme.typography.bodyMedium)
-    }
 }

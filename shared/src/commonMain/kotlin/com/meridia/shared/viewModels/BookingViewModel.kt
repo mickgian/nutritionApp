@@ -4,10 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meridia.shared.auth.AuthModule
 import com.meridia.shared.models.AppointmentDto
+import com.meridia.shared.models.MOCK_PAYMENT_TOKEN
+import com.meridia.shared.models.PaymentMethodUi
 import com.meridia.shared.models.SlotDto
 import com.meridia.shared.models.VisitTypeUi
 import com.meridia.shared.network.AppointmentRepository
 import com.meridia.shared.network.AppointmentRepositoryImpl
+import com.meridia.shared.network.PaymentRepository
+import com.meridia.shared.network.PaymentRepositoryImpl
 import com.meridia.shared.utils.ErrorHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,18 +37,26 @@ sealed interface BookingUiState {
         val visitType: VisitTypeUi = VisitTypeUi.Prima,
         val submitting: Boolean = false,
         val submitError: String? = null,
+        // Set once the appointment is booked, so a payment retry doesn't re-book.
+        val bookedAppointment: AppointmentDto? = null,
     ) : BookingUiState
 
     data class Confirmed(val appointment: AppointmentDto) : BookingUiState
 }
 
-class BookingViewModel(private val repo: AppointmentRepository? = null) : ViewModel() {
+class BookingViewModel(
+    private val repo: AppointmentRepository? = null,
+    private val paymentRepo: PaymentRepository? = null,
+) : ViewModel() {
 
     private val _state = MutableStateFlow<BookingUiState>(BookingUiState.Loading)
     val state: StateFlow<BookingUiState> = _state.asStateFlow()
 
     private fun repository(): AppointmentRepository =
         repo ?: AppointmentRepositoryImpl(authManager = AuthModule.getAuthManager())
+
+    private fun paymentRepository(): PaymentRepository =
+        paymentRepo ?: PaymentRepositoryImpl(authManager = AuthModule.getAuthManager())
 
     fun load() {
         _state.value = BookingUiState.Loading
@@ -83,17 +95,29 @@ class BookingViewModel(private val repo: AppointmentRepository? = null) : ViewMo
         }
     }
 
-    fun confirm() {
+    /** Books the appointment (once) then pays it; success confirms the booking. */
+    fun pay(method: PaymentMethodUi) {
         val content = _state.value as? BookingUiState.Content ?: return
         val slot = content.selectedSlot ?: return
+        if (content.submitting) return
         _state.value = content.copy(submitting = true, submitError = null)
         viewModelScope.launch {
-            runCatching { repository().book(slot.id, content.visitType.wire) }
-                .onSuccess { _state.value = BookingUiState.Confirmed(it) }
+            val booked = runCatching {
+                content.bookedAppointment ?: repository().book(slot.id, content.visitType.wire)
+            }
+            val appointment = booked.getOrElse {
+                _state.value = content.copy(submitting = false, submitError = ErrorHandler.handleHttpError(it))
+                return@launch
+            }
+            runCatching {
+                paymentRepository().pay("appointment", appointment.id, method.wire, MOCK_PAYMENT_TOKEN)
+            }
+                .onSuccess { _state.value = BookingUiState.Confirmed(appointment) }
                 .onFailure {
                     _state.value = content.copy(
                         submitting = false,
                         submitError = ErrorHandler.handleHttpError(it),
+                        bookedAppointment = appointment,
                     )
                 }
         }

@@ -54,9 +54,10 @@ fun BookingConfirmation(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            "In attesa di pagamento",
+            "Pagamento completato · riceverai la ricevuta via email",
             style = MeridiaTheme.typography.bodyMedium,
-            color = colors.arancio,
+            color = colors.verde,
+            textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
         MeridiaButton("Fatto", onClick = onDone, modifier = Modifier.widthIn(max = 240.dp))

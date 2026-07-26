@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.meridia.shared.screens.payment.PaymentPanel
 import com.meridia.shared.theme.MeridiaTheme
 import com.meridia.shared.theme.components.EyebrowLabel
 import com.meridia.shared.theme.components.MeridiaButton
@@ -34,9 +35,9 @@ import com.meridia.shared.viewModels.OrderFormula
 import com.meridia.shared.viewModels.PickupSlot
 
 /**
- * The box checkout sheet (DEV-041): pick a formula (box singolo / abbonamento)
- * and a pickup slot, then place the order via POST /api/v1/orders. Payment
- * itself arrives with Epic 7; on success the box is marked ordered.
+ * The box checkout sheet: pick a formula (box singolo / abbonamento) and a pickup
+ * slot, place the order (POST /api/v1/orders), then pay it (POST /api/v1/payments,
+ * DEV-071). On payment the box is ordered/paid.
  */
 @Composable
 fun BoxCheckoutScreen(
@@ -64,12 +65,29 @@ fun BoxCheckoutScreen(
         }
         Spacer(Modifier.height(10.dp))
 
-        if (state.placedOrder != null) {
-            SuccessBody(state = state, onOrdered = onOrdered)
-        } else {
-            CheckoutForm(state = state, vm = vm)
+        when {
+            state.paid -> SuccessBody(state = state, onOrdered = onOrdered)
+            state.placedOrder != null -> PaymentStep(state = state, vm = vm)
+            else -> CheckoutForm(state = state, vm = vm)
         }
     }
+}
+
+@Composable
+private fun PaymentStep(state: BoxCheckoutState, vm: BoxCheckoutViewModel) {
+    val colors = MeridiaTheme.colors
+    Text(
+        "${formulaName(state.formula)} · ritiro ${pickupName(state.pickup).lowercase()} (${state.pickup.window})",
+        style = MeridiaTheme.typography.bodyMedium,
+        color = colors.grigio,
+    )
+    Spacer(Modifier.height(14.dp))
+    PaymentPanel(
+        amountCents = state.formula.priceEur * 100,
+        processing = state.processing,
+        error = state.paymentError,
+        onPay = vm::pay,
+    )
 }
 
 @Composable
@@ -125,28 +143,22 @@ private fun CheckoutForm(state: BoxCheckoutState, vm: BoxCheckoutViewModel) {
 
     Spacer(Modifier.height(14.dp))
     MeridiaButton(
-        if (state.submitting) "Invio in corso…" else "Conferma ordine",
+        if (state.submitting) "Invio in corso…" else "Vai al pagamento",
         onClick = vm::place,
         enabled = !state.submitting,
-    )
-    Spacer(Modifier.height(8.dp))
-    Text(
-        "Il pagamento sarà disponibile a breve: l'ordine viene registrato come da confermare.",
-        style = MeridiaTheme.typography.labelMedium,
-        color = colors.grigio,
     )
 }
 
 @Composable
 private fun SuccessBody(state: BoxCheckoutState, onOrdered: () -> Unit) {
     val colors = MeridiaTheme.colors
-    Text("Ordine registrato ✓", style = MeridiaTheme.typography.displaySmall, color = colors.inchiostro)
+    Text("Box pagato ✓", style = MeridiaTheme.typography.displaySmall, color = colors.inchiostro)
     Spacer(Modifier.height(10.dp))
     val formulaLine =
         if (state.formula == OrderFormula.Subscription) "Abbonamento mensile attivato" else "Box singolo acquistato"
     Text(
         "$formulaLine · ritiro lunedì in studio, fascia ${pickupName(state.pickup).lowercase()} " +
-            "(${state.pickup.window}). Completeremo il pagamento a breve e ti avvisiamo lunedì " +
+            "(${state.pickup.window}). Riceverai la ricevuta via email e ti avvisiamo lunedì " +
             "mattina quando il box è pronto.",
         style = MeridiaTheme.typography.bodyMedium,
         color = colors.grigio,

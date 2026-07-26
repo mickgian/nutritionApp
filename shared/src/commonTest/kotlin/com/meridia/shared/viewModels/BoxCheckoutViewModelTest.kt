@@ -1,6 +1,7 @@
 package com.meridia.shared.viewModels
 
 import com.meridia.shared.models.OrderDto
+import com.meridia.shared.models.PaymentMethodUi
 import com.meridia.shared.network.BookingException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -92,5 +93,43 @@ class BoxCheckoutViewModelTest {
         vm.place()
         advanceUntilIdle()
         assertEquals("single", repo.lastFormula) // unchanged from the first successful call
+    }
+
+    @Test
+    fun pay_after_placing_marks_paid_and_targets_the_order() = runTest {
+        val payments = FakePaymentRepository()
+        val vm = BoxCheckoutViewModel(FakeOrderRepository(createResult = placed), payments)
+        vm.place()
+        advanceUntilIdle()
+        vm.pay(PaymentMethodUi.Card)
+        advanceUntilIdle()
+        assertTrue(vm.state.value.paid)
+        assertEquals(false, vm.state.value.processing)
+        assertEquals("order", payments.lastTarget)
+        assertEquals(5, payments.lastTargetId)
+    }
+
+    @Test
+    fun pay_failure_sets_payment_error_without_paying() = runTest {
+        val vm = BoxCheckoutViewModel(
+            FakeOrderRepository(createResult = placed),
+            FakePaymentRepository(error = BookingException("Pagamento non riuscito. Riprova.")),
+        )
+        vm.place()
+        advanceUntilIdle()
+        vm.pay(PaymentMethodUi.GooglePay)
+        advanceUntilIdle()
+        assertEquals("Pagamento non riuscito. Riprova.", vm.state.value.paymentError)
+        assertEquals(false, vm.state.value.paid)
+    }
+
+    @Test
+    fun pay_is_ignored_without_a_placed_order() = runTest {
+        val payments = FakePaymentRepository()
+        val vm = BoxCheckoutViewModel(FakeOrderRepository(createResult = placed), payments)
+        vm.pay(PaymentMethodUi.Card) // no order placed yet
+        advanceUntilIdle()
+        assertEquals(false, vm.state.value.paid)
+        assertNull(payments.lastTarget)
     }
 }

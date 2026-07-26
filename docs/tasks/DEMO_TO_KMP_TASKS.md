@@ -247,7 +247,7 @@ interface; wire a real PSP later. **Agents:** @egidio (design + ADR), @ezio, @se
 **Security:** @severino signs off — no PAN stored, idempotent confirmation, amounts server-authoritative.
 **Acceptance:** payment confirms the entity; amounts computed server-side; ADR recorded.
 
-### DEV-071: Payment UI (KMP)
+### DEV-071: Payment UI (KMP) — ✅ Done
 **Solution:** Reusable payment step (Apple/Google Pay + card buttons) used by booking
 and box checkout; success/failure states; receipt-by-email copy. **Agents:** @livia, @gioia.
 **Consumes (DEV-070):** `POST /api/v1/payments` (confirm an appointment or order).

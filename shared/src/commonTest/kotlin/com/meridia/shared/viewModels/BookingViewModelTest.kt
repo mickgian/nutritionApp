@@ -1,6 +1,7 @@
 package com.meridia.shared.viewModels
 
 import com.meridia.shared.models.AppointmentDto
+import com.meridia.shared.models.PaymentMethodUi
 import com.meridia.shared.models.SlotDto
 import com.meridia.shared.network.BookingException
 import kotlinx.coroutines.Dispatchers
@@ -68,36 +69,62 @@ class BookingViewModelTest {
     }
 
     @Test
-    fun confirm_success_emits_confirmed() = runTest {
+    fun pay_books_then_confirms() = runTest {
         val appointment = AppointmentDto(9, slot.id, "prima", slot.startsAt, "pending_payment", 9000)
+        val payments = FakePaymentRepository()
         val vm = BookingViewModel(
             FakeAppointmentRepository(slots = listOf(slot), bookResult = appointment),
+            payments,
         )
         vm.load()
         advanceUntilIdle()
         vm.selectSlot(slot)
-        vm.confirm()
+        vm.pay(PaymentMethodUi.Card)
         advanceUntilIdle()
         val state = vm.state.value
         assertTrue(state is BookingUiState.Confirmed)
         assertEquals(9, (state as BookingUiState.Confirmed).appointment.id)
+        // The payment targeted that appointment.
+        assertEquals("appointment", payments.lastTarget)
+        assertEquals(9, payments.lastTargetId)
     }
 
     @Test
-    fun confirm_failure_sets_italian_submit_error() = runTest {
+    fun pay_book_failure_sets_italian_submit_error() = runTest {
         val vm = BookingViewModel(
             FakeAppointmentRepository(
                 slots = listOf(slot),
                 bookError = BookingException("Orario non più disponibile"),
             ),
+            FakePaymentRepository(),
         )
         vm.load()
         advanceUntilIdle()
         vm.selectSlot(slot)
-        vm.confirm()
+        vm.pay(PaymentMethodUi.Card)
         advanceUntilIdle()
         val state = vm.state.value
         assertTrue(state is BookingUiState.Content)
         assertEquals("Orario non più disponibile", (state as BookingUiState.Content).submitError)
+    }
+
+    @Test
+    fun pay_failure_keeps_booked_appointment_for_retry() = runTest {
+        val appointment = AppointmentDto(9, slot.id, "prima", slot.startsAt, "pending_payment", 9000)
+        val vm = BookingViewModel(
+            FakeAppointmentRepository(slots = listOf(slot), bookResult = appointment),
+            FakePaymentRepository(error = BookingException("Pagamento non riuscito. Riprova.")),
+        )
+        vm.load()
+        advanceUntilIdle()
+        vm.selectSlot(slot)
+        vm.pay(PaymentMethodUi.ApplePay)
+        advanceUntilIdle()
+        val state = vm.state.value
+        assertTrue(state is BookingUiState.Content)
+        state as BookingUiState.Content
+        assertEquals("Pagamento non riuscito. Riprova.", state.submitError)
+        // The appointment stays booked so a retry pays it instead of re-booking.
+        assertEquals(9, state.bookedAppointment?.id)
     }
 }
