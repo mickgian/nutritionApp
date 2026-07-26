@@ -16,6 +16,13 @@ class NutritionPlanRepository:
         )
         return self.session.exec(stmt).first()
 
+    def active_names_by_client(self) -> dict[int, str]:
+        """Map of client_id → active plan name for every client (studio view, DEV-080)."""
+        stmt = select(NutritionPlan.client_id, NutritionPlan.name).where(
+            NutritionPlan.is_active == True,  # noqa: E712
+        )
+        return dict(self.session.exec(stmt).all())
+
     def list_by_client(self, client_id: int) -> list[NutritionPlan]:
         stmt = (
             select(NutritionPlan)

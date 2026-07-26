@@ -18,6 +18,7 @@ class NotificationKind(str, Enum):
     order_deadline = "order_deadline"
     box_ready = "box_ready"
     box_proposal = "box_proposal"
+    promotion = "promotion"  # studio broadcast (DEV-080)
 
 
 class Notification(SQLModel, table=True):

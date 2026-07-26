@@ -53,6 +53,7 @@ fun ConsulenzaScreen(
     onOpenBox: () -> Unit,
     onOpenProfile: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenAdmin: () -> Unit,
     vm: ConsulenzaViewModel = remember { ConsulenzaViewModel() },
     notificationsVm: NotificationsViewModel = remember { NotificationsViewModel() },
 ) {
@@ -124,6 +125,14 @@ fun ConsulenzaScreen(
                 null
             },
         )
+        if ((state as? ConsulenzaUiState.Content)?.isAdmin == true) {
+            Spacer(Modifier.height(10.dp))
+            MeridiaButton(
+                "Apri il pannello dello studio",
+                onClick = onOpenAdmin,
+                style = MeridiaButtonStyle.Ghost,
+            )
+        }
     }
 }
 

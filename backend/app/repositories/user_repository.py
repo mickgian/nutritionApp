@@ -6,7 +6,7 @@ Emails are normalized to lower-case so lookups and uniqueness are case-insensiti
 
 from sqlmodel import Session, select
 
-from app.models.user import User
+from app.models.user import User, UserRole
 
 
 def normalize_email(email: str) -> str:
@@ -19,6 +19,15 @@ class UserRepository:
 
     def get_by_id(self, user_id: int) -> User | None:
         return self.session.get(User, user_id)
+
+    def list_clients(self) -> list[User]:
+        """Active clienti, ordered by name — the studio directory (admin-only)."""
+        stmt = (
+            select(User)
+            .where(User.role == UserRole.cliente, User.is_active == True)  # noqa: E712
+            .order_by(User.full_name)
+        )
+        return list(self.session.exec(stmt).all())
 
     def get_by_email(self, email: str) -> User | None:
         stmt = select(User).where(User.email == normalize_email(email))

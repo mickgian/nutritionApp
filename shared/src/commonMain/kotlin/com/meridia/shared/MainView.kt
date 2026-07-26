@@ -31,6 +31,7 @@ import com.meridia.shared.screens.ConsulenzaScreen
 import com.meridia.shared.screens.LoginScreen
 import com.meridia.shared.screens.RegistrationScreen
 import com.meridia.shared.screens.SessionListScreen
+import com.meridia.shared.screens.admin.AdminScreen
 import com.meridia.shared.screens.booking.BookingScreen
 import com.meridia.shared.screens.box.BoxCheckoutScreen
 import com.meridia.shared.screens.box.BoxScreen
@@ -118,7 +119,13 @@ fun CommonView() {
                     onOpenBox = { nav.navigate("Box") },
                     onOpenProfile = { nav.navigate("Profile") },
                     onOpenNotifications = { nav.navigate("Notifications") },
+                    onOpenAdmin = { nav.navigate("Admin") },
                 )
+            }
+
+            /* ---------------- ADMIN (studio panel) ---------------- */
+            composable("Admin") {
+                AdminScreen(onClose = { nav.popBackStack() })
             }
 
             /* ---------------- BOOKING wizard ---------------- */

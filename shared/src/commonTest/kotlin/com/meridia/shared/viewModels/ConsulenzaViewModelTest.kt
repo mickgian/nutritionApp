@@ -2,6 +2,7 @@ package com.meridia.shared.viewModels
 
 import com.meridia.shared.models.ProfessionalDto
 import com.meridia.shared.models.ReviewDto
+import com.meridia.shared.models.UserResponse
 import com.meridia.shared.network.BookingException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -79,5 +80,31 @@ class ConsulenzaViewModelTest {
         val state = vm.state.value
         assertTrue(state is ConsulenzaUiState.Error)
         assertEquals("Impossibile caricare il profilo. Riprova.", (state as ConsulenzaUiState.Error).message)
+    }
+
+    @Test
+    fun admin_user_content_exposes_is_admin_true() = runTest {
+        val vm = ConsulenzaViewModel(
+            FakeProfessionalRepository(result = professional),
+            FakeAuthRepository(registerResult = UserResponse(1, "studio@meridia.it", "Studio", "admin")),
+        )
+        vm.load()
+        advanceUntilIdle()
+        val state = vm.state.value
+        assertTrue(state is ConsulenzaUiState.Content)
+        assertTrue((state as ConsulenzaUiState.Content).isAdmin)
+    }
+
+    @Test
+    fun cliente_user_content_is_not_admin() = runTest {
+        val vm = ConsulenzaViewModel(
+            FakeProfessionalRepository(result = professional),
+            FakeAuthRepository(registerResult = UserResponse(2, "mario@example.com", "Mario", "cliente")),
+        )
+        vm.load()
+        advanceUntilIdle()
+        val state = vm.state.value
+        assertTrue(state is ConsulenzaUiState.Content)
+        assertEquals(false, (state as ConsulenzaUiState.Content).isAdmin)
     }
 }
