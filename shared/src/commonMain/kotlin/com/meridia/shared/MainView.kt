@@ -27,9 +27,11 @@ import com.meridia.shared.auth.AuthState
 import com.meridia.shared.theme.MeridiaTheme
 import com.meridia.shared.models.SessionResponse
 import com.meridia.shared.screens.ChatScreenWithHistory
+import com.meridia.shared.screens.ConsulenzaScreen
 import com.meridia.shared.screens.LoginScreen
 import com.meridia.shared.screens.RegistrationScreen
 import com.meridia.shared.screens.SessionListScreen
+import com.meridia.shared.screens.booking.BookingScreen
 import com.meridia.shared.viewModels.RegistrationViewModel
 import com.meridia.shared.viewModels.SessionViewModel
 import kotlinx.coroutines.launch
@@ -48,16 +50,9 @@ fun CommonView() {
     val startDestination = when (authState) {
         is AuthState.Loading -> "Login" // Show login while loading
         is AuthState.Unauthenticated -> "Login"
-        is AuthState.Authenticated -> "Chat" // Always go directly to Chat
+        is AuthState.Authenticated -> "Consulenza" // Meridia home (booking entry)
         is AuthState.Error -> "Login"
     }
-    
-    // Debug: Log the current auth state
-    LaunchedEffect(authState) {
-        println("DEBUG: AuthState changed to: $authState")
-        println("DEBUG: StartDestination: $startDestination")
-    }
-
     MeridiaTheme {
         // Show loading screen if AuthState is still Loading
         if (authState is AuthState.Loading) {
@@ -69,7 +64,7 @@ fun CommonView() {
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "Initializing...",
+                        "Avvio…",
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -100,9 +95,29 @@ fun CommonView() {
             composable("Login") {
                 LoginScreen(
                     onSuccess = { newToken ->
-                        nav.navigate("Chat") { popUpTo("Login") { inclusive = true } }
+                        nav.navigate("Consulenza") { popUpTo("Login") { inclusive = true } }
                     },
                     onSwitchToRegister = { nav.navigate("Register") }
+                )
+            }
+
+            /* ---------------- CONSULENZA (home) ---------------- */
+            composable("Consulenza") {
+                val scope = rememberCoroutineScope()
+                ConsulenzaScreen(
+                    onBook = { nav.navigate("Booking") },
+                    onLogout = {
+                        scope.launch { AuthModule.getAuthManager().logout() }
+                        nav.navigate("Login") { popUpTo("Consulenza") { inclusive = true } }
+                    },
+                )
+            }
+
+            /* ---------------- BOOKING wizard ---------------- */
+            composable("Booking") {
+                BookingScreen(
+                    onClose = { nav.popBackStack() },
+                    onBooked = { nav.popBackStack() },
                 )
             }
 

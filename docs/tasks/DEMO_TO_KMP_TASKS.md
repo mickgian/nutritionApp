@@ -119,7 +119,7 @@ in `TokenStorage`; attach it to authorized requests; handle 401 → back to logi
 concurrent booking of the same slot (409). **Tests:** happy, 409 taken, 404, isolation, edge.
 **Acceptance:** ≥80% coverage; ownership enforced; slot lifecycle correct.
 
-### DEV-022: Booking wizard (KMP)
+### DEV-022: Booking wizard (KMP) — ✅ Done
 **Problem:** The demo's 3-step wizard (data → riepilogo → pagamento) must be real.
 **Solution:** `BookingViewModel` with a stepper `UiState`; a calendar/slot picker fed
 by `/availability`; a summary step; a payment step (see Epic 7). Confirmation on success.
