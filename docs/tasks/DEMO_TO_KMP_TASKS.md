@@ -130,7 +130,7 @@ by `/availability`; a summary step; a payment step (see Epic 7). Confirmation on
 (continue disabled until valid). All copy Italian. **Cancellation terms** shown (48h rule).
 **Acceptance:** end-to-end booking against backend; all states rendered; NAV entry from Consulenza tab.
 
-### DEV-023: Professional profile & reviews
+### DEV-023: Professional profile & reviews — ✅ Done
 **Problem:** The Consulenza screen shows the nutritionist card + reviews.
 **Solution:** `GET /api/v1/professional` (public-ish: bio, credentials, rating,
 reviews). Seed Dott.ssa Serra + demo reviews. **Agents:** @ezio, @livia, @primo.

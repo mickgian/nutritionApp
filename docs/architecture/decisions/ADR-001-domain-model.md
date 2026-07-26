@@ -4,7 +4,7 @@
 - **Date:** 2026-07-25
 - **Deciders:** @primo (database design, author), @egidio (architect, approve)
 - **Consulted:** @ezio (backend), @severino (isolation & GDPR)
-- **Task:** DEV-004 · **Supersedes:** — · **Amended by:** —
+- **Task:** DEV-004 · **Supersedes:** — · **Amended by:** Amendment 1 (DEV-023)
 
 > This ADR is the single source of truth for Meridia's schema. Every later epic
 > (`DEV-0xx`) references it. Deviations require a new ADR that amends this one.
@@ -241,6 +241,7 @@ A review on the professional (public-ish, shown on the Consulenza card).
 | id | int | **PK** |
 | professional_id | int | **FK** professionals.id, **IDX** |
 | author_id | int? | **FK** users.id (nullable for seeded demo reviews) |
+| author_name | str(120) | display name captured at review time (Amendment 1) |
 | rating | int | 1–5 |
 | body | str(1000) | Italian |
 | created_at | datetime | |
@@ -323,3 +324,20 @@ remain as-is and are the only tables in the DB.
 **Follow-ups referenced by later epics:** availability/booking (DEV-020/021),
 plan+box (DEV-030/031), orders (DEV-040), credits (DEV-050), notifications (DEV-060),
 payments (DEV-070, its own ADR-002 for the provider abstraction), GDPR erasure (DEV-093).
+
+---
+
+## Amendments
+
+### Amendment 1 (DEV-023) — `reviews.author_name`
+
+- **Date:** 2026-07-26 · **Author:** @ezio · **Approved:** @egidio · **Consulted:** @severino
+
+Adds a denormalized `author_name: str(120)` column to `reviews`. The original shape
+carried only a nullable `author_id`, which leaves seeded demo reviews (no account)
+with no name to display, and would lose the reviewer's name if the account is later
+erased (DEV-093). Capturing the display name at write time keeps the Consulenza card
+rendering correctly in both cases and is GDPR-friendlier (the review no longer depends
+on the user row surviving). `author_id` remains the link to a real account when one
+exists. No other table changes; the addition is additive and does not affect isolation
+(reviews are studio reference data, not per-user owned).
