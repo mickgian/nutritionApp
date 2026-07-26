@@ -38,7 +38,15 @@ fun AdminOrdersPanel(orders: List<AdminOrderDto>) {
             style = MeridiaTheme.typography.bodyMedium,
             color = colors.grigio,
         )
-        if (orders.isEmpty()) return@MeridiaCard
+        if (orders.isEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Nessun ordine ancora.",
+                style = MeridiaTheme.typography.bodyMedium,
+                color = colors.grigio,
+            )
+            return@MeridiaCard
+        }
         Spacer(Modifier.height(12.dp))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             orders.forEach { OrderRow(it) }

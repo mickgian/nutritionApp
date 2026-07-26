@@ -112,8 +112,19 @@ fun LockedBox() {
 
 @Composable
 fun DayMeals(items: List<BoxItemDto>, onMealClick: (Int) -> Unit) {
+    val colors = MeridiaTheme.colors
     val lunch = items.firstOrNull { it.slot == "lunch" }
     val dinner = items.firstOrNull { it.slot == "dinner" }
+    if (lunch == null && dinner == null) {
+        MeridiaCard {
+            Text(
+                "Nessun pasto previsto per questo giorno.",
+                style = MeridiaTheme.typography.bodyMedium,
+                color = colors.grigio,
+            )
+        }
+        return
+    }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         lunch?.let { MealCard(label = "Pranzo", item = it, onMealClick = onMealClick) }
         dinner?.let { MealCard(label = "Cena", item = it, onMealClick = onMealClick) }
