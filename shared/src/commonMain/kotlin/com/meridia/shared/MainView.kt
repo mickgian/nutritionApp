@@ -33,6 +33,7 @@ import com.meridia.shared.screens.RegistrationScreen
 import com.meridia.shared.screens.SessionListScreen
 import com.meridia.shared.screens.booking.BookingScreen
 import com.meridia.shared.screens.box.BoxScreen
+import com.meridia.shared.screens.meal.MealDetailScreen
 import com.meridia.shared.viewModels.RegistrationViewModel
 import com.meridia.shared.viewModels.SessionViewModel
 import kotlinx.coroutines.launch
@@ -125,7 +126,16 @@ fun CommonView() {
 
             /* ---------------- BOX (weekly meal box) ---------------- */
             composable("Box") {
-                BoxScreen(onClose = { nav.popBackStack() })
+                BoxScreen(
+                    onClose = { nav.popBackStack() },
+                    onOpenMeal = { mealId -> nav.navigate("MealDetail/$mealId") },
+                )
+            }
+
+            /* ---------------- MEAL detail ---------------- */
+            composable("MealDetail/{mealId}") { backStackEntry ->
+                val mealId = backStackEntry.arguments?.getString("mealId")?.toIntOrNull() ?: 0
+                MealDetailScreen(mealId = mealId, onClose = { nav.popBackStack() })
             }
 
 

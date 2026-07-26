@@ -156,7 +156,7 @@ and `MealBox`/`BoxItem` linking meals to a plan + week + day. `GET /api/v1/me/bo
 **Agents:** @primo (schema), @ezio (endpoints), @clelia. **Change:** ADDITIVE.
 **Acceptance:** weekday strip + meals render from backend; macros correct; seed one 4-week cycle.
 
-### DEV-032: Meal detail (KMP)
+### DEV-032: Meal detail (KMP) — ✅ Done
 **Problem:** Tapping a meal opens a detail sheet (nutrition, storage, reheating).
 **Solution:** `GET /api/v1/meals/{id}`; detail screen with valori nutrizionali,
 conservazione, riscaldamento. **Agents:** @livia, @ezio. **Change:** ADDITIVE.

@@ -79,20 +79,20 @@ fun LockedBox() {
 }
 
 @Composable
-fun DayMeals(items: List<BoxItemDto>) {
+fun DayMeals(items: List<BoxItemDto>, onMealClick: (Int) -> Unit) {
     val lunch = items.firstOrNull { it.slot == "lunch" }
     val dinner = items.firstOrNull { it.slot == "dinner" }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        lunch?.let { MealCard(label = "Pranzo", item = it) }
-        dinner?.let { MealCard(label = "Cena", item = it) }
+        lunch?.let { MealCard(label = "Pranzo", item = it, onMealClick = onMealClick) }
+        dinner?.let { MealCard(label = "Cena", item = it, onMealClick = onMealClick) }
     }
 }
 
 @Composable
-private fun MealCard(label: String, item: BoxItemDto) {
+private fun MealCard(label: String, item: BoxItemDto, onMealClick: (Int) -> Unit) {
     val colors = MeridiaTheme.colors
     val meal = item.meal
-    MeridiaCard {
+    MeridiaCard(modifier = Modifier.clickable { onMealClick(meal.id) }) {
         Text(label.uppercase(), style = MeridiaTheme.typography.labelMedium, color = colors.grigio)
         Spacer(Modifier.height(4.dp))
         Text(

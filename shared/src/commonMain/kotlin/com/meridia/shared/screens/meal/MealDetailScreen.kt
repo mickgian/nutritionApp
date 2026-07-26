@@ -1,4 +1,4 @@
-package com.meridia.shared.screens.box
+package com.meridia.shared.screens.meal
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,32 +20,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.meridia.shared.models.MealDto
 import com.meridia.shared.theme.MeridiaTheme
 import com.meridia.shared.theme.components.EyebrowLabel
+import com.meridia.shared.theme.components.MacroBadge
 import com.meridia.shared.theme.components.MeridiaButton
 import com.meridia.shared.theme.components.MeridiaButtonStyle
-import com.meridia.shared.viewModels.BoxUiState
-import com.meridia.shared.viewModels.BoxViewModel
+import com.meridia.shared.theme.components.MeridiaCard
+import com.meridia.shared.viewModels.MealDetailUiState
+import com.meridia.shared.viewModels.MealDetailViewModel
 
 /**
- * The weekly meal box. Renders loading / locked (no plan) / error / content
- * (orderable) states from GET /api/v1/me/plan + /me/box (DEV-033). The "ordered"
- * in-preparation state and the real checkout arrive with Epic 4 (DEV-040/041).
+ * Meal detail opened from the weekly box (DEV-032): valori nutrizionali,
+ * conservazione, riscaldamento. Renders loading / error / content states.
  */
 @Composable
-fun BoxScreen(
+fun MealDetailScreen(
+    mealId: Int,
     onClose: () -> Unit,
-    onOpenMeal: (Int) -> Unit,
-    vm: BoxViewModel = remember { BoxViewModel() },
+    vm: MealDetailViewModel = remember { MealDetailViewModel() },
 ) {
     val state by vm.state.collectAsState()
-    LaunchedEffect(Unit) { vm.load() }
+    LaunchedEffect(mealId) { vm.load(mealId) }
     val colors = MeridiaTheme.colors
 
     Column(
@@ -60,60 +61,59 @@ fun BoxScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            EyebrowLabel("Box settimanale")
+            EyebrowLabel("Pasto")
             TextButton(onClick = onClose) { Text("Chiudi", color = colors.verde) }
         }
         Spacer(Modifier.height(10.dp))
 
         when (val s = state) {
-            BoxUiState.Loading -> Centered { CircularProgressIndicator(color = colors.verde) }
-            BoxUiState.Locked -> LockedBox()
-            is BoxUiState.Error -> ErrorBlock(message = s.message, onRetry = vm::load)
-            is BoxUiState.Content -> BoxContent(
-                content = s,
-                onSelectWeekday = vm::selectWeekday,
-                onOpenMeal = onOpenMeal,
-            )
+            MealDetailUiState.Loading -> Centered { CircularProgressIndicator(color = colors.verde) }
+            is MealDetailUiState.Error -> ErrorBlock(message = s.message, onRetry = { vm.load(mealId) })
+            is MealDetailUiState.Content -> MealBody(meal = s.meal)
         }
     }
 }
 
 @Composable
-private fun BoxContent(
-    content: BoxUiState.Content,
-    onSelectWeekday: (Int) -> Unit,
-    onOpenMeal: (Int) -> Unit,
-) {
+private fun MealBody(meal: MealDto) {
     val colors = MeridiaTheme.colors
-    var showOrderNote by remember { mutableStateOf(false) }
     Text(
-        content.plan.name,
+        "${meal.assetRef ?: ""} ${meal.title}".trim(),
         style = MeridiaTheme.typography.displaySmall,
         color = colors.inchiostro,
     )
-    Text(
-        "${content.plan.dailyKcal} kcal al giorno · ${content.plan.weeks} settimane",
-        style = MeridiaTheme.typography.bodyMedium,
-        color = colors.grigio,
-    )
+    Text(slotLabel(meal.slot), style = MeridiaTheme.typography.bodyMedium, color = colors.grigio)
     Spacer(Modifier.height(14.dp))
-    DeadlineBanner()
-    Spacer(Modifier.height(14.dp))
-    WeekdayStrip(selected = content.selectedWeekday, onSelect = onSelectWeekday)
-    Spacer(Modifier.height(14.dp))
-    DayMeals(
-        items = content.box.items.filter { it.weekday == content.selectedWeekday },
-        onMealClick = onOpenMeal,
-    )
-    Spacer(Modifier.height(18.dp))
-    MeridiaButton("Ordina il box", onClick = { showOrderNote = true })
-    if (showOrderNote) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Il pagamento del box sarà disponibile a breve.",
-            style = MeridiaTheme.typography.bodyMedium,
-            color = colors.arancio,
-        )
+
+    MeridiaCard {
+        Text("Valori nutrizionali", style = MeridiaTheme.typography.titleMedium, color = colors.inchiostro)
+        Spacer(Modifier.height(6.dp))
+        Text("${meal.kcal} kcal", style = MeridiaTheme.typography.bodyLarge, color = colors.verde)
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            MacroBadge("Proteine ${meal.proteinG}g")
+            MacroBadge("Carboidrati ${meal.carbG}g")
+            MacroBadge("Grassi ${meal.fatG}g")
+        }
+    }
+
+    meal.storageNote?.let {
+        Spacer(Modifier.height(12.dp))
+        InfoCard(title = "Conservazione", body = it)
+    }
+    meal.reheatNote?.let {
+        Spacer(Modifier.height(12.dp))
+        InfoCard(title = "Riscaldamento", body = it)
+    }
+}
+
+@Composable
+private fun InfoCard(title: String, body: String) {
+    val colors = MeridiaTheme.colors
+    MeridiaCard {
+        Text(title, style = MeridiaTheme.typography.titleMedium, color = colors.inchiostro, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(6.dp))
+        Text(body, style = MeridiaTheme.typography.bodyMedium, color = colors.grigio)
     }
 }
 
@@ -138,4 +138,10 @@ private fun Centered(content: @Composable () -> Unit) {
         contentAlignment = Alignment.Center,
         content = { content() },
     )
+}
+
+private fun slotLabel(slot: String): String = when (slot) {
+    "lunch" -> "Pranzo"
+    "dinner" -> "Cena"
+    else -> slot
 }
