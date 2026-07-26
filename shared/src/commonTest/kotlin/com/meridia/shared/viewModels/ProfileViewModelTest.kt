@@ -32,7 +32,8 @@ class ProfileViewModelTest {
         credits: FakeCreditRepository = FakeCreditRepository(),
         boxes: FakeBoxRepository = FakeBoxRepository(),
         orders: FakeOrderRepository = FakeOrderRepository(),
-    ) = ProfileViewModel(appointments, credits, boxes, orders)
+        privacy: FakePrivacyRepository = FakePrivacyRepository(),
+    ) = ProfileViewModel(appointments, credits, boxes, orders, privacy)
 
     @BeforeTest
     fun setUp() {
@@ -147,5 +148,60 @@ class ProfileViewModelTest {
         model.load()
         advanceUntilIdle()
         assertTrue(model.state.value is ProfileUiState.Error)
+    }
+
+    @Test
+    fun export_success_stores_data_and_sets_notice() = runTest {
+        val privacy = FakePrivacyRepository(exportResult = "{\"account\":{}}")
+        val model = vm(privacy = privacy)
+        model.load()
+        advanceUntilIdle()
+        model.exportData()
+        advanceUntilIdle()
+        val state = model.state.value as ProfileUiState.Content
+        assertEquals(1, privacy.exportCalls)
+        assertEquals("{\"account\":{}}", state.exportedJson)
+        assertTrue(state.privacyNotice?.contains("Esportazione") == true)
+        assertTrue(!state.privacyBusy)
+    }
+
+    @Test
+    fun export_failure_sets_privacy_notice() = runTest {
+        val model = vm(privacy = FakePrivacyRepository(exportError = BookingException("Errore di rete")))
+        model.load()
+        advanceUntilIdle()
+        model.exportData()
+        advanceUntilIdle()
+        val state = model.state.value as ProfileUiState.Content
+        assertEquals("Errore di rete", state.privacyNotice)
+        assertNull(state.exportedJson)
+        assertTrue(!state.privacyBusy)
+    }
+
+    @Test
+    fun delete_success_invokes_callback() = runTest {
+        val privacy = FakePrivacyRepository()
+        val model = vm(privacy = privacy)
+        model.load()
+        advanceUntilIdle()
+        var deleted = false
+        model.deleteAccount { deleted = true }
+        advanceUntilIdle()
+        assertEquals(1, privacy.deleteCalls)
+        assertTrue(deleted)
+    }
+
+    @Test
+    fun delete_failure_keeps_user_and_shows_notice() = runTest {
+        val model = vm(privacy = FakePrivacyRepository(deleteError = BookingException("Sessione scaduta")))
+        model.load()
+        advanceUntilIdle()
+        var deleted = false
+        model.deleteAccount { deleted = true }
+        advanceUntilIdle()
+        val state = model.state.value as ProfileUiState.Content
+        assertTrue(!deleted)
+        assertEquals("Sessione scaduta", state.privacyNotice)
+        assertTrue(!state.privacyBusy)
     }
 }

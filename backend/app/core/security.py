@@ -33,8 +33,17 @@ def create_access_token(subject: str, role: str, expires_minutes: int | None = N
 
 
 def decode_token(token: str) -> dict[str, Any] | None:
-    """Decode and validate a JWT. Returns the claims or ``None`` if invalid."""
+    """Decode and validate a JWT. Returns the claims or ``None`` if invalid.
+
+    Requires both ``exp`` and ``sub``: a token missing an expiry (a
+    never-expiring token) or a subject is rejected rather than trusted.
+    """
     try:
-        return jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
+        return jwt.decode(
+            token,
+            settings.secret_key,
+            algorithms=[settings.jwt_algorithm],
+            options={"require_exp": True, "require_sub": True},
+        )
     except JWTError:
         return None

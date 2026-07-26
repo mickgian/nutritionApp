@@ -6,7 +6,12 @@ thresholds elsewhere in the codebase — read them from ``settings``.
 
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Placeholder secret shipped in .env.example — must never survive into production.
+_DEFAULT_SECRET = "change-me-in-production"
+_MIN_SECRET_LENGTH = 32
 
 
 class Settings(BaseSettings):
@@ -34,6 +39,18 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @model_validator(mode="after")
+    def _require_strong_secret_in_production(self) -> "Settings":
+        """Fail-closed: refuse to boot in production with a weak/default secret."""
+        if self.is_production and (
+            self.secret_key == _DEFAULT_SECRET or len(self.secret_key) < _MIN_SECRET_LENGTH
+        ):
+            raise ValueError(
+                "SECRET_KEY must be overridden with a strong value "
+                f"(>= {_MIN_SECRET_LENGTH} chars) in production."
+            )
+        return self
 
 
 @lru_cache

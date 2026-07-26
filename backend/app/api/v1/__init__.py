@@ -15,6 +15,7 @@ from app.api.v1 import (
     orders,
     payments,
     plans,
+    privacy,
     professional,
 )
 
@@ -31,4 +32,5 @@ api_router.include_router(orders.router)
 api_router.include_router(credit.router)
 api_router.include_router(notifications.router)
 api_router.include_router(payments.router)
+api_router.include_router(privacy.router)
 api_router.include_router(health.router, tags=["health"])

@@ -14,6 +14,8 @@ import com.meridia.shared.network.CreditRepository
 import com.meridia.shared.network.CreditRepositoryImpl
 import com.meridia.shared.network.OrderRepository
 import com.meridia.shared.network.OrderRepositoryImpl
+import com.meridia.shared.network.PrivacyRepository
+import com.meridia.shared.network.PrivacyRepositoryImpl
 import com.meridia.shared.utils.ErrorHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +25,8 @@ import kotlinx.coroutines.launch
 /**
  * The profilo tab: aggregates the client's own data from /me/* — upcoming
  * appointment, active credits, plan, and box orders — and drives the cancel
- * action (with the 48h credit messaging, DEV-050/051).
+ * action (with the 48h credit messaging, DEV-050/051) plus the GDPR
+ * export/erasure self-service (DEV-093).
  */
 sealed interface ProfileUiState {
     data object Loading : ProfileUiState
@@ -36,6 +39,9 @@ sealed interface ProfileUiState {
         val subscriptionActive: Boolean,
         val cancelling: Boolean = false,
         val notice: String? = null,
+        val privacyBusy: Boolean = false,
+        val privacyNotice: String? = null,
+        val exportedJson: String? = null,
     ) : ProfileUiState
 }
 
@@ -44,6 +50,7 @@ class ProfileViewModel(
     private val credits: CreditRepository? = null,
     private val boxes: BoxRepository? = null,
     private val orders: OrderRepository? = null,
+    private val privacy: PrivacyRepository? = null,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
@@ -60,6 +67,9 @@ class ProfileViewModel(
 
     private fun orderRepo(): OrderRepository =
         orders ?: OrderRepositoryImpl(authManager = AuthModule.getAuthManager())
+
+    private fun privacyRepo(): PrivacyRepository =
+        privacy ?: PrivacyRepositoryImpl(authManager = AuthModule.getAuthManager())
 
     /** Loads the profile. A [notice] (e.g. after a cancellation) is kept on the new state. */
     fun load(notice: String? = null) {
@@ -110,5 +120,50 @@ class ProfileViewModel(
                     )
                 }
         }
+    }
+
+    /** GDPR export: fetch the caller's full data document (kept in state for sharing). */
+    fun exportData() {
+        val content = _state.value as? ProfileUiState.Content ?: return
+        if (content.privacyBusy) return
+        _state.value = content.copy(privacyBusy = true, privacyNotice = null)
+        viewModelScope.launch {
+            runCatching { privacyRepo().exportData() }
+                .onSuccess { data ->
+                    updateContent {
+                        it.copy(
+                            privacyBusy = false,
+                            exportedJson = data,
+                            privacyNotice = "Esportazione completata: i tuoi dati sono pronti.",
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    updateContent {
+                        it.copy(privacyBusy = false, privacyNotice = ErrorHandler.handleHttpError(e))
+                    }
+                }
+        }
+    }
+
+    /** GDPR erasure: delete the account, then hand control back to [onDeleted] (logout). */
+    fun deleteAccount(onDeleted: () -> Unit) {
+        val content = _state.value as? ProfileUiState.Content ?: return
+        if (content.privacyBusy) return
+        _state.value = content.copy(privacyBusy = true, privacyNotice = null)
+        viewModelScope.launch {
+            runCatching { privacyRepo().deleteAccount() }
+                .onSuccess { onDeleted() }
+                .onFailure { e ->
+                    updateContent {
+                        it.copy(privacyBusy = false, privacyNotice = ErrorHandler.handleHttpError(e))
+                    }
+                }
+        }
+    }
+
+    private inline fun updateContent(transform: (ProfileUiState.Content) -> ProfileUiState.Content) {
+        val content = _state.value as? ProfileUiState.Content ?: return
+        _state.value = transform(content)
     }
 }

@@ -51,6 +51,7 @@ private const val POLICY =
 fun ProfileScreen(
     onClose: () -> Unit,
     onBook: () -> Unit,
+    onAccountDeleted: () -> Unit,
     vm: ProfileViewModel = remember { ProfileViewModel() },
 ) {
     val state by vm.state.collectAsState()
@@ -77,7 +78,16 @@ fun ProfileScreen(
         when (val s = state) {
             ProfileUiState.Loading -> Centered { CircularProgressIndicator(color = colors.verde) }
             is ProfileUiState.Error -> ErrorBlock(message = s.message, onRetry = { vm.load() })
-            is ProfileUiState.Content -> ProfileContent(content = s, onBook = onBook, onCancel = vm::cancel)
+            is ProfileUiState.Content -> {
+                ProfileContent(content = s, onBook = onBook, onCancel = vm::cancel)
+                Spacer(Modifier.height(12.dp))
+                ProfilePrivacyCard(
+                    busy = s.privacyBusy,
+                    notice = s.privacyNotice,
+                    onExport = vm::exportData,
+                    onDelete = { vm.deleteAccount(onAccountDeleted) },
+                )
+            }
         }
     }
 }
@@ -181,20 +191,6 @@ private fun PercorsoCard(plan: PlanDto?, boxCount: Int, subscription: Boolean) {
         SpreadRow("Box ordinati", boxCount.toString())
         Spacer(Modifier.height(8.dp))
         SpreadRow("Abbonamento", if (subscription) "Attivo · € 79/box" else "Non attivo")
-    }
-}
-
-@Composable
-private fun StudioCard() {
-    val colors = MeridiaTheme.colors
-    MeridiaCard {
-        EyebrowLabel("Studio")
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Studio Meridia — Via dei Gelsomini 12, Pachino (SR)\nLun-Ven 8:30-19:00 · ☎ 0931 000000",
-            style = MeridiaTheme.typography.bodyMedium,
-            color = colors.grigio,
-        )
     }
 }
 

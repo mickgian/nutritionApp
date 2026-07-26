@@ -148,9 +148,14 @@ fun CommonView() {
 
             /* ---------------- PROFILE ---------------- */
             composable("Profile") {
+                val scope = rememberCoroutineScope()
                 ProfileScreen(
                     onClose = { nav.popBackStack() },
                     onBook = { nav.navigate("Booking") },
+                    onAccountDeleted = {
+                        scope.launch { AuthModule.getAuthManager().logout() }
+                        nav.navigate("Login") { popUpTo("Consulenza") { inclusive = true } }
+                    },
                 )
             }
 
