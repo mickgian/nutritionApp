@@ -9,6 +9,9 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     full_name: str = Field(min_length=1, max_length=120)
+    # GDPR: the client must send explicit privacy-policy acceptance. The service
+    # rejects a missing/false value with an Italian 400 (see AuthService.register).
+    privacy_consent: bool = False
 
 
 class LoginRequest(BaseModel):

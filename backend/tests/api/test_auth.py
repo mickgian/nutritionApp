@@ -16,9 +16,21 @@ ME = "/api/v1/auth/me"
 
 
 def _register(
-    client: TestClient, email="mario@example.com", password="password123", name="Mario Rossi"
+    client: TestClient,
+    email="mario@example.com",
+    password="password123",
+    name="Mario Rossi",
+    privacy_consent=True,
 ):
-    return client.post(REGISTER, json={"email": email, "password": password, "full_name": name})
+    return client.post(
+        REGISTER,
+        json={
+            "email": email,
+            "password": password,
+            "full_name": name,
+            "privacy_consent": privacy_consent,
+        },
+    )
 
 
 # ----------------------------- register ----------------------------------- #
@@ -42,6 +54,34 @@ def test_register_never_stores_plaintext_password(client: TestClient, session: S
     stored = session.exec(select(User).where(User.email == "mario@example.com")).one()
     assert stored.hashed_password != "password123"
     assert stored.hashed_password  # something was hashed
+
+
+def test_register_records_privacy_consent_timestamp(client: TestClient, session: Session):
+    _register(client)
+    stored = session.exec(select(User).where(User.email == "mario@example.com")).one()
+    assert stored.privacy_consent_at is not None
+
+
+def test_register_without_consent_returns_400_italian(client: TestClient):
+    resp = _register(client, privacy_consent=False)
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == (
+        "È necessario accettare l'informativa sulla privacy per registrarsi."
+    )
+
+
+def test_register_missing_consent_field_is_rejected(client: TestClient):
+    # Omitting the field entirely defaults to False → same 400, never a silent opt-in.
+    resp = client.post(
+        REGISTER,
+        json={"email": "nuovo@example.com", "password": "password123", "full_name": "Nuovo"},
+    )
+    assert resp.status_code == 400
+
+
+def test_register_without_consent_creates_no_user(client: TestClient, session: Session):
+    _register(client, privacy_consent=False)
+    assert session.exec(select(User).where(User.email == "mario@example.com")).first() is None
 
 
 def test_register_duplicate_email_returns_409_italian(client: TestClient):

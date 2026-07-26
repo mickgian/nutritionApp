@@ -21,3 +21,6 @@ class User(SQLModel, table=True):
     role: UserRole = Field(default=UserRole.cliente, index=True)
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    # GDPR: when the user accepted the privacy policy. NULL for accounts created
+    # before explicit consent was recorded (consent was implicit at registration).
+    privacy_consent_at: datetime | None = Field(default=None)

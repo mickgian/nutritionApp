@@ -10,6 +10,7 @@ data class RegisterRequest(
     val email: String,
     val password: String,
     @SerialName("full_name") val fullName: String,
+    @SerialName("privacy_consent") val privacyConsent: Boolean,
 )
 
 /** POST /api/v1/auth/login body. */

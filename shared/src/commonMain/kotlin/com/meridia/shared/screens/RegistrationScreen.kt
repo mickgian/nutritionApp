@@ -6,14 +6,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -56,10 +60,16 @@ fun RegistrationScreen(
         var fullName by remember { mutableStateOf("") }
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
+        var consent by remember { mutableStateOf(false) }
 
         val emailFocusRequester = remember { FocusRequester() }
         val passwordFocusRequester = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
+
+        fun canSubmit(): Boolean =
+            state is RegistrationViewModel.State.Idle &&
+                fullName.isNotBlank() && email.isNotBlank() && consent &&
+                PasswordValidator.validatePassword(password).isValid
 
         OutlinedTextField(
             value = fullName,
@@ -90,12 +100,7 @@ fun RegistrationScreen(
             keyboardActions = KeyboardActions(
                 onDone = {
                     keyboardController?.hide()
-                    val valid = PasswordValidator.validatePassword(password).isValid
-                    if (state is RegistrationViewModel.State.Idle &&
-                        fullName.isNotBlank() && email.isNotBlank() && valid
-                    ) {
-                        vm.register(email, password, fullName)
-                    }
+                    if (canSubmit()) vm.register(email, password, fullName, consent)
                 },
             ),
             singleLine = true,
@@ -106,21 +111,20 @@ fun RegistrationScreen(
             PasswordRequirements(password)
         }
 
+        Spacer(Modifier.height(12.dp))
+        ConsentCheckbox(checked = consent, onCheckedChange = { consent = it })
+
         Spacer(Modifier.height(16.dp))
 
         // Keep the button in a fixed position across states to avoid layout shift.
         when (state) {
             RegistrationViewModel.State.Loading -> CircularProgressIndicator()
             RegistrationViewModel.State.Success -> LaunchedEffect(Unit) { onRegistered() }
-            else -> {
-                val valid = PasswordValidator.validatePassword(password).isValid
-                Button(
-                    onClick = { vm.register(email, password, fullName) },
-                    enabled = state !is RegistrationViewModel.State.Loading &&
-                        fullName.isNotBlank() && email.isNotBlank() && valid,
-                ) {
-                    Text("Registrati")
-                }
+            else -> Button(
+                onClick = { vm.register(email, password, fullName, consent) },
+                enabled = canSubmit(),
+            ) {
+                Text("Registrati")
             }
         }
 
@@ -137,6 +141,25 @@ fun RegistrationScreen(
         TextButton(onClick = onSwitchToLogin) {
             Text("Hai già un account? Accedi")
         }
+    }
+}
+
+/** Privacy-policy acceptance (GDPR). One 48 dp touch target with merged semantics. */
+@Composable
+private fun ConsentCheckbox(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange)
+            .heightIn(min = 48.dp)
+            .padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(checked = checked, onCheckedChange = null)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "Accetto l'informativa sulla privacy",
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }
 

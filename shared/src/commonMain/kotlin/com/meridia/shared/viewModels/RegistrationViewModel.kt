@@ -50,14 +50,15 @@ class RegistrationViewModel(
      * @param email the user's email
      * @param password the chosen password
      * @param fullName the user's full name
+     * @param privacyConsent whether the user accepted the privacy policy (GDPR)
      */
-    fun register(email: String, password: String, fullName: String) {
+    fun register(email: String, password: String, fullName: String, privacyConsent: Boolean) {
         Logger.authInfo("VIEWMODEL_REG_START", "RegistrationViewModel.register() called for email: $email")
         viewModelScope.launch {
             _state.value = State.Loading
             try {
                 // call our Ktor-based repository
-                val response = getRepository().register(email, password, fullName)
+                val response = getRepository().register(email, password, fullName, privacyConsent)
                 Logger.authInfo("VIEWMODEL_REG_SUCCESS", "RegistrationViewModel registration successful for user ID: ${response.id}")
                 _state.value = State.Success
             } catch (e: Exception) {

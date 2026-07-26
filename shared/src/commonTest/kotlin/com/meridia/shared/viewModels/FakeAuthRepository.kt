@@ -18,9 +18,16 @@ class FakeAuthRepository(
 
     var lastLoginEmail: String? = null
     var lastRegisterFullName: String? = null
+    var lastRegisterConsent: Boolean? = null
 
-    override suspend fun register(email: String, password: String, fullName: String): UserResponse {
+    override suspend fun register(
+        email: String,
+        password: String,
+        fullName: String,
+        privacyConsent: Boolean,
+    ): UserResponse {
         lastRegisterFullName = fullName
+        lastRegisterConsent = privacyConsent
         registerError?.let { throw it }
         return registerResult
     }

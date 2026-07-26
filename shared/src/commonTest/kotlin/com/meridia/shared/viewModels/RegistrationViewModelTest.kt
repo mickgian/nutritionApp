@@ -33,18 +33,19 @@ class RegistrationViewModelTest {
         )
         val vm = RegistrationViewModel(fake)
 
-        vm.register("mario@example.com", "Password1!", "Mario Rossi")
+        vm.register("mario@example.com", "Password1!", "Mario Rossi", privacyConsent = true)
         advanceUntilIdle()
 
         assertTrue(vm.state.value is RegistrationViewModel.State.Success)
         assertEquals("Mario Rossi", fake.lastRegisterFullName)
+        assertEquals(true, fake.lastRegisterConsent)
     }
 
     @Test
     fun register_failure_emits_italian_error_state() = runTest {
         val vm = RegistrationViewModel(FakeAuthRepository(registerError = AuthException("Email già registrata")))
 
-        vm.register("mario@example.com", "Password1!", "Mario Rossi")
+        vm.register("mario@example.com", "Password1!", "Mario Rossi", privacyConsent = true)
         advanceUntilIdle()
 
         val state = vm.state.value

@@ -30,7 +30,12 @@ import kotlin.time.Duration.Companion.minutes
 class AuthException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 interface AuthRepository {
-    suspend fun register(email: String, password: String, fullName: String): UserResponse
+    suspend fun register(
+        email: String,
+        password: String,
+        fullName: String,
+        privacyConsent: Boolean,
+    ): UserResponse
     suspend fun login(email: String, password: String): TokenResponse
     suspend fun loginAndSaveToken(email: String, password: String): TokenResponse
     suspend fun me(): UserResponse
@@ -47,17 +52,30 @@ class AuthRepositoryImpl(
         isLenient = true
     }
 
-    override suspend fun register(email: String, password: String, fullName: String): UserResponse {
+    override suspend fun register(
+        email: String,
+        password: String,
+        fullName: String,
+        privacyConsent: Boolean,
+    ): UserResponse {
         Logger.authInfo("REGISTER_START", "Registering $email")
         try {
             val resp = client.post("$base/auth/register") {
                 contentType(ContentType.Application.Json)
-                setBody(RegisterRequest(email = email, password = password, fullName = fullName))
+                setBody(
+                    RegisterRequest(
+                        email = email,
+                        password = password,
+                        fullName = fullName,
+                        privacyConsent = privacyConsent,
+                    ),
+                )
             }
             if (resp.status.isSuccess()) return resp.body<UserResponse>()
 
             val body = resp.bodyAsText()
             val message = when (resp.status.value) {
+                400 -> detailOrNull(body) ?: "Registrazione non riuscita. Riprova."
                 409 -> detailOrNull(body) ?: "Email già registrata"
                 422 -> "Controlla i dati inseriti e riprova."
                 else -> detailOrNull(body) ?: "Registrazione non riuscita. Riprova."

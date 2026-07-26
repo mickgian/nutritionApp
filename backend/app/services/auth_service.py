@@ -4,6 +4,8 @@ Raises 4xx HTTPExceptions with Italian messages for expected conditions — neve
 a 500. Every branch is covered by tests/api/test_auth.py.
 """
 
+from datetime import UTC, datetime
+
 import structlog
 from fastapi import HTTPException, status
 
@@ -20,6 +22,11 @@ class AuthService:
         self.repo = repo
 
     def register(self, data: RegisterRequest) -> User:
+        if not data.privacy_consent:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="È necessario accettare l'informativa sulla privacy per registrarsi.",
+            )
         if self.repo.get_by_email(data.email) is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -30,6 +37,7 @@ class AuthService:
             hashed_password=hash_password(data.password),
             full_name=data.full_name.strip(),
             role=UserRole.cliente,
+            privacy_consent_at=datetime.now(UTC),
         )
         created = self.repo.create(user)
         logger.info("user_registered", user_id=created.id, operation="register")
