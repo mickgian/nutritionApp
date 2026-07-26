@@ -69,3 +69,46 @@ def test_notifications_isolated_between_clients(client: TestClient, session: Ses
     resp = client.get(NOTIFS, headers=_auth_header(b))
     assert resp.status_code == 200
     assert resp.json() == []
+
+
+# ------------------------------ mark read --------------------------------- #
+
+READ = "/api/v1/me/notifications/read"
+
+
+def test_mark_read_requires_authentication(client: TestClient):
+    assert client.post(READ).status_code == 401
+
+
+def test_mark_all_read_sets_is_read_and_returns_count(
+    client: TestClient, session: Session, make_user
+):
+    cliente = make_user("reader@example.com", UserRole.cliente)
+    _give_plan(session, cliente.id)
+    client.get(NOTIFS, headers=_auth_header(cliente))  # generate at least one
+    resp = client.post(READ, headers=_auth_header(cliente))
+    assert resp.status_code == 200
+    assert resp.json()["updated"] >= 1
+    after = client.get(NOTIFS, headers=_auth_header(cliente)).json()
+    assert all(n["is_read"] is True for n in after)
+
+
+def test_mark_read_is_idempotent(client: TestClient, session: Session, make_user):
+    cliente = make_user("idemread@example.com", UserRole.cliente)
+    _give_plan(session, cliente.id)
+    client.get(NOTIFS, headers=_auth_header(cliente))
+    client.post(READ, headers=_auth_header(cliente))
+    second = client.post(READ, headers=_auth_header(cliente))
+    assert second.json()["updated"] == 0  # nothing left unread
+
+
+def test_mark_read_isolated_between_clients(client: TestClient, session: Session, make_user):
+    a = make_user("ra@example.com", UserRole.cliente)
+    b = make_user("rb@example.com", UserRole.cliente)
+    _give_plan(session, a.id)
+    _give_plan(session, b.id)
+    client.get(NOTIFS, headers=_auth_header(a))
+    client.get(NOTIFS, headers=_auth_header(b))
+    client.post(READ, headers=_auth_header(a))  # a marks own read
+    b_after = client.get(NOTIFS, headers=_auth_header(b)).json()
+    assert any(n["is_read"] is False for n in b_after)  # b untouched

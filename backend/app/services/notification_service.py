@@ -40,6 +40,9 @@ class NotificationService:
         self._persist_new(client_id, candidates)
         return self.notifications.list_by_client(client_id)
 
+    def mark_all_read(self, client_id: int) -> int:
+        return self.notifications.mark_all_read(client_id)
+
     def _gather_state(self, client_id: int, now: datetime) -> ClientState:
         appointments = self.appointments.list_by_client(client_id)
         active = [a for a in appointments if a.status != AppointmentStatus.cancelled]

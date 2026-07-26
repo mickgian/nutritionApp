@@ -226,9 +226,10 @@ service; delivery via push is a later integration (out of scope here — model +
 **Agents:** @primo, @ezio, @clelia, @egidio (rules review). **Change:** ADDITIVE.
 **Acceptance:** notifications listed per user; rules unit-tested; isolation enforced.
 
-### DEV-061: Notifications screen (KMP)
+### DEV-061: Notifications screen (KMP) — ✅ Done
 **Solution:** `NotificationsViewModel` + list screen; unread dot on the tab. Italian copy.
-**Consumes (DEV-060):** `GET /api/v1/me/notifications` (the client's own notifications).
+**Consumes (DEV-060):** `GET /api/v1/me/notifications` (the client's own notifications),
+`POST /api/v1/me/notifications/read` (mark all read, added here to clear the dot).
 **Agents:** @livia, @gioia. **Change:** ADDITIVE.
 **Acceptance:** list renders; empty/error states; NAV dot behavior.
 

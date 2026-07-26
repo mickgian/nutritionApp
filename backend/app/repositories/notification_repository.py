@@ -25,6 +25,20 @@ class NotificationRepository:
         stmt = select(Notification.dedupe_key).where(Notification.client_id == client_id)
         return set(self.session.exec(stmt).all())
 
+    def mark_all_read(self, client_id: int) -> int:
+        """Mark the client's unread notifications read; returns how many changed."""
+        stmt = select(Notification).where(
+            Notification.client_id == client_id,
+            Notification.is_read == False,  # noqa: E712 (SQL boolean comparison)
+        )
+        rows = list(self.session.exec(stmt).all())
+        for notification in rows:
+            notification.is_read = True
+            self.session.add(notification)
+        if rows:
+            self.session.commit()
+        return len(rows)
+
     def create_missing(self, notifications: list[Notification]) -> None:
         """Insert new notifications; a unique-key race just means it already exists."""
         if not notifications:

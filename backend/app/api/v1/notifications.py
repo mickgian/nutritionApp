@@ -12,7 +12,7 @@ from app.repositories.appointment_repository import AppointmentRepository
 from app.repositories.notification_repository import NotificationRepository
 from app.repositories.nutrition_plan_repository import NutritionPlanRepository
 from app.repositories.order_repository import OrderRepository
-from app.schemas.notification import NotificationRead
+from app.schemas.notification import MarkReadResult, NotificationRead
 from app.services.notification_service import NotificationService
 
 router = APIRouter(tags=["notifications"])
@@ -30,3 +30,8 @@ def _service(session: SessionDep) -> NotificationService:
 @router.get("/me/notifications", response_model=list[NotificationRead])
 def list_my_notifications(current_user: CurrentUser, session: SessionDep) -> list[Notification]:
     return _service(session).list_for(current_user.id)
+
+
+@router.post("/me/notifications/read", response_model=MarkReadResult)
+def mark_notifications_read(current_user: CurrentUser, session: SessionDep) -> MarkReadResult:
+    return MarkReadResult(updated=_service(session).mark_all_read(current_user.id))

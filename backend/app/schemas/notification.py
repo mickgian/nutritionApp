@@ -17,3 +17,9 @@ class NotificationRead(BaseModel):
     icon: str
     is_read: bool
     created_at: datetime
+
+
+class MarkReadResult(BaseModel):
+    """How many notifications were marked read."""
+
+    updated: int

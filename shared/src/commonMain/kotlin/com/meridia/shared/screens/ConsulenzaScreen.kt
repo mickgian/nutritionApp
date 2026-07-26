@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -23,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.meridia.shared.models.ProfessionalDto
@@ -34,6 +37,8 @@ import com.meridia.shared.theme.components.MeridiaButtonStyle
 import com.meridia.shared.theme.components.MeridiaCard
 import com.meridia.shared.viewModels.ConsulenzaUiState
 import com.meridia.shared.viewModels.ConsulenzaViewModel
+import com.meridia.shared.viewModels.NotificationsUiState
+import com.meridia.shared.viewModels.NotificationsViewModel
 import kotlin.math.round
 
 /**
@@ -47,11 +52,18 @@ fun ConsulenzaScreen(
     onLogout: () -> Unit,
     onOpenBox: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenNotifications: () -> Unit,
     vm: ConsulenzaViewModel = remember { ConsulenzaViewModel() },
+    notificationsVm: NotificationsViewModel = remember { NotificationsViewModel() },
 ) {
     val state by vm.state.collectAsState()
-    LaunchedEffect(Unit) { vm.load() }
+    val notificationsState by notificationsVm.state.collectAsState()
+    LaunchedEffect(Unit) {
+        vm.load()
+        notificationsVm.load()
+    }
     val colors = MeridiaTheme.colors
+    val unread = (notificationsState as? NotificationsUiState.Content)?.unreadCount ?: 0
 
     Column(
         modifier = Modifier
@@ -101,7 +113,23 @@ fun ConsulenzaScreen(
             onClick = onOpenProfile,
             style = MeridiaButtonStyle.Ghost,
         )
+        Spacer(Modifier.height(10.dp))
+        MeridiaButton(
+            if (unread > 0) "Le tue notifiche ($unread)" else "Le tue notifiche",
+            onClick = onOpenNotifications,
+            style = MeridiaButtonStyle.Ghost,
+            leadingIcon = if (unread > 0) {
+                { UnreadDot() }
+            } else {
+                null
+            },
+        )
     }
+}
+
+@Composable
+private fun UnreadDot() {
+    Box(Modifier.size(8.dp).clip(CircleShape).background(MeridiaTheme.colors.arancio))
 }
 
 @Composable

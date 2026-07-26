@@ -35,6 +35,7 @@ import com.meridia.shared.screens.booking.BookingScreen
 import com.meridia.shared.screens.box.BoxCheckoutScreen
 import com.meridia.shared.screens.box.BoxScreen
 import com.meridia.shared.screens.meal.MealDetailScreen
+import com.meridia.shared.screens.notifications.NotificationsScreen
 import com.meridia.shared.screens.profile.ProfileScreen
 import com.meridia.shared.viewModels.RegistrationViewModel
 import com.meridia.shared.viewModels.SessionViewModel
@@ -116,6 +117,7 @@ fun CommonView() {
                     },
                     onOpenBox = { nav.navigate("Box") },
                     onOpenProfile = { nav.navigate("Profile") },
+                    onOpenNotifications = { nav.navigate("Notifications") },
                 )
             }
 
@@ -150,6 +152,14 @@ fun CommonView() {
                 ProfileScreen(
                     onClose = { nav.popBackStack() },
                     onBook = { nav.navigate("Booking") },
+                )
+            }
+
+            /* ---------------- NOTIFICATIONS ---------------- */
+            composable("Notifications") {
+                NotificationsScreen(
+                    // Re-enter Consulenza fresh so the unread dot refreshes after viewing.
+                    onClose = { nav.navigate("Consulenza") { popUpTo("Consulenza") { inclusive = true } } },
                 )
             }
 
