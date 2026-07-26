@@ -149,7 +149,7 @@ Client: `GET /api/v1/me/plan`. Persona is derived: no plan → locked box.
 **Edge:** client with no plan → 404/empty (client shows locked state, not an error).
 **Acceptance:** admin assigns; client sees plan or locked state; isolation enforced.
 
-### DEV-031: Meals & weekly box menu
+### DEV-031: Meals & weekly box menu — ✅ Done (backend)
 **Problem:** The box shows 14 meals/week with kcal + macros, per weekday.
 **Solution:** `Meal` (title, emoji/asset, kcal, protein_g, carb_g, fat_g, slot=lunch/dinner)
 and `MealBox`/`BoxItem` linking meals to a plan + week + day. `GET /api/v1/me/box?week=`.
@@ -167,6 +167,7 @@ conservazione, riscaldamento. **Agents:** @livia, @ezio. **Change:** ADDITIVE.
 **Solution:** `BoxViewModel` composing plan + order status; renders locked (no plan),
 orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
 **Consumes (DEV-030):** `GET /api/v1/me/plan` (404 → locked state).
+**Consumes (DEV-031):** `GET /api/v1/me/box?week=` (the weekly 14-meal menu).
 **Agents:** @livia (primary), @gioia. **Change:** ADDITIVE.
 **Acceptance:** all three states correct per backend data; deadline copy; NAV from Box tab.
 
