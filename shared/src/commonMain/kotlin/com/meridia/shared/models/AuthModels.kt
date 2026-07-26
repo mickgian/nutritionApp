@@ -50,12 +50,3 @@ data class TokenWithExpiry(
 data class ErrorResponse(
     val detail: String,
 )
-
-// --- Chat template models (legacy; kept until the chat scaffold is removed) ---
-
-@Serializable
-data class SessionResponse(
-    @SerialName("session_id") val sessionId: String,
-    val name: String,
-    val token: TokenResponse,
-)

@@ -9,13 +9,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,12 +22,9 @@ import androidx.navigation.compose.rememberNavController
 import com.meridia.shared.auth.AuthModule
 import com.meridia.shared.auth.AuthState
 import com.meridia.shared.theme.MeridiaTheme
-import com.meridia.shared.models.SessionResponse
-import com.meridia.shared.screens.ChatScreenWithHistory
 import com.meridia.shared.screens.ConsulenzaScreen
 import com.meridia.shared.screens.LoginScreen
 import com.meridia.shared.screens.RegistrationScreen
-import com.meridia.shared.screens.SessionListScreen
 import com.meridia.shared.screens.admin.AdminScreen
 import com.meridia.shared.screens.booking.BookingScreen
 import com.meridia.shared.screens.box.BoxCheckoutScreen
@@ -39,7 +33,6 @@ import com.meridia.shared.screens.meal.MealDetailScreen
 import com.meridia.shared.screens.notifications.NotificationsScreen
 import com.meridia.shared.screens.profile.ProfileScreen
 import com.meridia.shared.viewModels.RegistrationViewModel
-import com.meridia.shared.viewModels.SessionViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -50,7 +43,6 @@ fun CommonView() {
     /*  Top-level app state                                          */
     /* ------------------------------------------------------------ */
     val authState by AuthModule.getAuthManager().authState.collectAsState()
-    var session by remember { mutableStateOf<SessionResponse?>(null) }
 
     /* Decide which screen to start on */
     val startDestination = when (authState) {
@@ -175,73 +167,6 @@ fun CommonView() {
                 val mealId = backStackEntry.arguments?.getString("mealId")?.toIntOrNull() ?: 0
                 MealDetailScreen(mealId = mealId, onClose = { nav.popBackStack() })
             }
-
-
-            /* ------------- SESSION (pick / create) ------------- */
-            composable("Session") {
-                when (val currentAuthState = authState) {
-                    is AuthState.Authenticated -> {
-                        val bearer = currentAuthState.token.accessToken
-                        val sessionVm = remember { SessionViewModel(token = bearer) }
-
-                        val coroutineScope = rememberCoroutineScope()
-                        
-                        SessionListScreen(
-                            vm = sessionVm,
-                            onPick = { chosen ->
-                                session = chosen
-                                nav.navigate("Chat")
-                            },
-                            onLogout = {           // clear creds + bounce to login
-                                session = null
-                                coroutineScope.launch {
-                                    AuthModule.getAuthManager().logout()
-                                }
-                                nav.navigate("Login") {
-                                    popUpTo("Session") { inclusive = true }
-                                }
-                            }
-                        )
-                    }
-                    else -> {
-                        // User is not authenticated, bounce to Login
-                        LaunchedEffect(Unit) {
-                            nav.navigate("Login") { popUpTo("Session") { inclusive = true } }
-                        }
-                    }
-                }
-            }
-
-            /* ---------------- CHAT -------------------- */
-            composable("Chat") {
-                when (val currentAuthState = authState) {
-                    is AuthState.Authenticated -> {
-                        val bearer = currentAuthState.token.accessToken
-                        val coroutineScope = rememberCoroutineScope()
-
-                        // New ChatGPT-style chat screen that manages sessions internally
-                        ChatScreenWithHistory(
-                            token = bearer,
-                            onLogout = {
-                                session = null
-                                coroutineScope.launch {
-                                    AuthModule.getAuthManager().logout()
-                                }
-                                nav.navigate("Login") {
-                                    popUpTo("Chat") { inclusive = true }
-                                }
-                            }
-                        )
-                    }
-                    else -> {
-                        // User is not authenticated, bounce to Login
-                        LaunchedEffect(Unit) {
-                            nav.navigate("Login") { popUpTo("Chat") { inclusive = true } }
-                        }
-                    }
-                }
-            }
-
         }
     }
 }

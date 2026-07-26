@@ -3,7 +3,7 @@ import androidx.compose.ui.window.application
 import com.meridia.shared.AppViewDesktop
 
 fun main() = application {
-    Window(title = "Base AI", onCloseRequest = ::exitApplication) {
+    Window(title = "Meridia", onCloseRequest = ::exitApplication) {
         AppViewDesktop()
     }
 }
