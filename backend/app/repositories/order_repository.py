@@ -22,7 +22,16 @@ class OrderRepository:
         )
         return self.session.exec(stmt).first()
 
+    def get_by_id(self, order_id: int) -> Order | None:
+        return self.session.get(Order, order_id)
+
     def create(self, order: Order) -> Order:
+        self.session.add(order)
+        self.session.commit()
+        self.session.refresh(order)
+        return order
+
+    def save(self, order: Order) -> Order:
         self.session.add(order)
         self.session.commit()
         self.session.refresh(order)

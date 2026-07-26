@@ -12,6 +12,7 @@ from app.models.meal_box import BoxItem, MealBox  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
 from app.models.nutrition_plan import NutritionPlan  # noqa: F401
 from app.models.order import Order  # noqa: F401
+from app.models.payment import Payment  # noqa: F401
 from app.models.professional import Professional  # noqa: F401
 from app.models.review import Review  # noqa: F401
 from app.models.user import User  # noqa: F401

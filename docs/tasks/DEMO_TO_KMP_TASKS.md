@@ -237,7 +237,7 @@ service; delivery via push is a later integration (out of scope here — model +
 
 ## Epic 7 — Payments
 
-### DEV-070: Payment abstraction (backend)
+### DEV-070: Payment abstraction (backend) — ✅ Done
 **Problem:** Appointments and boxes are paid (demo: Apple/Google Pay + card).
 **Solution:** A `PaymentProvider` abstraction that records a `Payment` (amount cents,
 method, provider token, status) and confirms the related appointment/order. **Never**
@@ -250,6 +250,7 @@ interface; wire a real PSP later. **Agents:** @egidio (design + ADR), @ezio, @se
 ### DEV-071: Payment UI (KMP)
 **Solution:** Reusable payment step (Apple/Google Pay + card buttons) used by booking
 and box checkout; success/failure states; receipt-by-email copy. **Agents:** @livia, @gioia.
+**Consumes (DEV-070):** `POST /api/v1/payments` (confirm an appointment or order).
 **Change:** ADDITIVE. **Acceptance:** both flows use it; success/failure rendered; Italian.
 
 ---
