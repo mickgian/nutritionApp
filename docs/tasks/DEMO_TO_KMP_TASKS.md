@@ -195,7 +195,7 @@ orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
 
 ## Epic 5 — Profile, cancellation & credits
 
-### DEV-050: Appointment reschedule / cancel + credit
+### DEV-050: Appointment reschedule / cancel + credit — ✅ Done
 **Problem:** >48h before, a client can move or cancel free and receive a 6-month credit.
 **Solution:** `PATCH /api/v1/appointments/{id}` (reschedule), `DELETE /api/v1/appointments/{id}`
 (cancel → issue `Credit` if >48h). `GET /api/v1/me/credits`. Enforce the 48h rule server-side.
@@ -209,6 +209,8 @@ slot → 409. **Edge:** cancel someone else's appt (403/404), credit expiry. **T
 **Problem:** The profilo tab shows appointment, credit, plan, box count, studio info.
 **Solution:** `ProfileViewModel` aggregating `/me/*`; manage/cancel actions with the
 48h messaging. **Agents:** @livia, @gioia. **Change:** ADDITIVE.
+**Consumes (DEV-050):** `PATCH /api/v1/appointments/{id}` (reschedule),
+`DELETE /api/v1/appointments/{id}` (cancel), `GET /api/v1/me/credits` (own credits).
 **Acceptance:** renders real data; cancel flow works; empty states; Italian copy.
 
 ---

@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.appointment import AppointmentStatus, VisitType
+from app.schemas.credit import CreditRead
 
 
 class SlotPublic(BaseModel):
@@ -22,6 +23,12 @@ class AppointmentCreate(BaseModel):
     visit_type: VisitType
 
 
+class AppointmentReschedule(BaseModel):
+    """Move an existing appointment to another open slot."""
+
+    slot_id: int
+
+
 class AppointmentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -31,3 +38,11 @@ class AppointmentRead(BaseModel):
     scheduled_at: datetime
     status: AppointmentStatus
     price_cents: int
+
+
+class CancellationResult(BaseModel):
+    """The outcome of cancelling an appointment, plus any credit issued."""
+
+    appointment_id: int
+    status: AppointmentStatus
+    credit: CreditRead | None = None

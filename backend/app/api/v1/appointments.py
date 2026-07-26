@@ -9,7 +9,16 @@ from app.models.appointment import Appointment
 from app.models.availability import AvailabilitySlot
 from app.repositories.appointment_repository import AppointmentRepository
 from app.repositories.availability_repository import AvailabilityRepository
-from app.schemas.appointment import AppointmentCreate, AppointmentRead, SlotPublic
+from app.repositories.credit_repository import CreditRepository
+from app.schemas.appointment import (
+    AppointmentCreate,
+    AppointmentRead,
+    AppointmentReschedule,
+    CancellationResult,
+    SlotPublic,
+)
+from app.schemas.credit import CreditRead
+from app.services.appointment_lifecycle_service import AppointmentLifecycleService
 from app.services.appointment_service import AppointmentService
 
 router = APIRouter(tags=["appointments"])
@@ -17,6 +26,14 @@ router = APIRouter(tags=["appointments"])
 
 def _service(session: SessionDep) -> AppointmentService:
     return AppointmentService(AppointmentRepository(session), AvailabilityRepository(session))
+
+
+def _lifecycle(session: SessionDep) -> AppointmentLifecycleService:
+    return AppointmentLifecycleService(
+        AppointmentRepository(session),
+        AvailabilityRepository(session),
+        CreditRepository(session),
+    )
 
 
 @router.get("/availability", response_model=list[SlotPublic])
@@ -44,3 +61,27 @@ def list_my_appointments(
     session: SessionDep,
 ) -> list[Appointment]:
     return _service(session).list_mine(current_user.id)
+
+
+@router.patch("/appointments/{appointment_id}", response_model=AppointmentRead)
+def reschedule_appointment(
+    appointment_id: int,
+    data: AppointmentReschedule,
+    current_user: CurrentUser,
+    session: SessionDep,
+) -> Appointment:
+    return _lifecycle(session).reschedule(current_user.id, appointment_id, data)
+
+
+@router.delete("/appointments/{appointment_id}", response_model=CancellationResult)
+def cancel_appointment(
+    appointment_id: int,
+    current_user: CurrentUser,
+    session: SessionDep,
+) -> CancellationResult:
+    appointment, credit = _lifecycle(session).cancel(current_user.id, appointment_id)
+    return CancellationResult(
+        appointment_id=appointment.id,
+        status=appointment.status,
+        credit=CreditRead.model_validate(credit) if credit else None,
+    )

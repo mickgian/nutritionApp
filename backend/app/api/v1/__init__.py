@@ -7,6 +7,7 @@ from app.api.v1 import (
     auth,
     availability,
     box,
+    credit,
     health,
     meals,
     orders,
@@ -23,4 +24,5 @@ api_router.include_router(plans.router)
 api_router.include_router(box.router)
 api_router.include_router(meals.router)
 api_router.include_router(orders.router)
+api_router.include_router(credit.router)
 api_router.include_router(health.router, tags=["health"])

@@ -6,6 +6,7 @@ them. One concern per file.
 
 from app.models.appointment import Appointment  # noqa: F401
 from app.models.availability import AvailabilitySlot  # noqa: F401
+from app.models.credit import Credit  # noqa: F401
 from app.models.meal import Meal  # noqa: F401
 from app.models.meal_box import BoxItem, MealBox  # noqa: F401
 from app.models.nutrition_plan import NutritionPlan  # noqa: F401
