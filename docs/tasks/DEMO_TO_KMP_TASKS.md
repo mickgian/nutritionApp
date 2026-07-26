@@ -175,7 +175,7 @@ orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
 
 ## Epic 4 — Meal-box orders & checkout
 
-### DEV-040: Box order backend
+### DEV-040: Box order backend — ✅ Done
 **Problem:** Clients order a single box (€89) or a subscription (€79/box) with a pickup slot.
 **Solution:** `POST /api/v1/orders` (plan=single|subscription, pickup=mattina|pomeriggio),
 `GET /api/v1/orders` (own), status lifecycle `pending_payment → paid → …`. Prices in cents.
@@ -188,6 +188,7 @@ orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
 **Problem:** The demo's checkout sheet (formula + pickup + pay) must be real.
 **Solution:** `BoxCheckoutViewModel`; formula selector, pickup selector, total, payment
 (Epic 7); success → box marked ordered. **Agents:** @livia, @gioia, @clelia. **Change:** ADDITIVE.
+**Consumes (DEV-040):** `POST /api/v1/orders` (place an order), `GET /api/v1/orders` (own orders).
 **Acceptance:** end-to-end order; states rendered; savings/subscription copy correct.
 
 ---
