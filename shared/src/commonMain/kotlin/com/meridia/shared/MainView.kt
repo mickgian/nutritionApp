@@ -35,6 +35,7 @@ import com.meridia.shared.screens.booking.BookingScreen
 import com.meridia.shared.screens.box.BoxCheckoutScreen
 import com.meridia.shared.screens.box.BoxScreen
 import com.meridia.shared.screens.meal.MealDetailScreen
+import com.meridia.shared.screens.profile.ProfileScreen
 import com.meridia.shared.viewModels.RegistrationViewModel
 import com.meridia.shared.viewModels.SessionViewModel
 import kotlinx.coroutines.launch
@@ -114,6 +115,7 @@ fun CommonView() {
                         nav.navigate("Login") { popUpTo("Consulenza") { inclusive = true } }
                     },
                     onOpenBox = { nav.navigate("Box") },
+                    onOpenProfile = { nav.navigate("Profile") },
                 )
             }
 
@@ -140,6 +142,14 @@ fun CommonView() {
                     onClose = { nav.popBackStack() },
                     // Re-enter Box fresh so it reloads and shows the ordered state.
                     onOrdered = { nav.navigate("Box") { popUpTo("Box") { inclusive = true } } },
+                )
+            }
+
+            /* ---------------- PROFILE ---------------- */
+            composable("Profile") {
+                ProfileScreen(
+                    onClose = { nav.popBackStack() },
+                    onBook = { nav.navigate("Booking") },
                 )
             }
 

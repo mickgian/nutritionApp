@@ -46,6 +46,7 @@ fun ConsulenzaScreen(
     onBook: () -> Unit,
     onLogout: () -> Unit,
     onOpenBox: () -> Unit,
+    onOpenProfile: () -> Unit,
     vm: ConsulenzaViewModel = remember { ConsulenzaViewModel() },
 ) {
     val state by vm.state.collectAsState()
@@ -92,6 +93,12 @@ fun ConsulenzaScreen(
         MeridiaButton(
             "Il tuo box settimanale",
             onClick = onOpenBox,
+            style = MeridiaButtonStyle.Ghost,
+        )
+        Spacer(Modifier.height(10.dp))
+        MeridiaButton(
+            "Il tuo profilo",
+            onClick = onOpenProfile,
             style = MeridiaButtonStyle.Ghost,
         )
     }

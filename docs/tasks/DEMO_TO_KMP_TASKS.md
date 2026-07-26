@@ -205,7 +205,7 @@ slot → 409. **Edge:** cancel someone else's appt (403/404), credit expiry. **T
 >48h issues credit, <48h no credit, isolation, reschedule conflict.
 **Acceptance:** credit issued correctly; 48h rule enforced server-side (not just UI).
 
-### DEV-051: Profile screen (KMP)
+### DEV-051: Profile screen (KMP) — ✅ Done
 **Problem:** The profilo tab shows appointment, credit, plan, box count, studio info.
 **Solution:** `ProfileViewModel` aggregating `/me/*`; manage/cancel actions with the
 48h messaging. **Agents:** @livia, @gioia. **Change:** ADDITIVE.

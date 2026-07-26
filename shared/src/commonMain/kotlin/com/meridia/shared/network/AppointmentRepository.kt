@@ -4,6 +4,7 @@ import com.meridia.shared.ApiConfig
 import com.meridia.shared.auth.AuthManager
 import com.meridia.shared.models.AppointmentDto
 import com.meridia.shared.models.BookAppointmentRequest
+import com.meridia.shared.models.CancellationDto
 import com.meridia.shared.models.ErrorResponse
 import com.meridia.shared.models.SlotDto
 import com.meridia.shared.utils.ErrorHandler
@@ -11,6 +12,7 @@ import com.meridia.shared.utils.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
@@ -30,6 +32,9 @@ interface AppointmentRepository {
     suspend fun availability(fromDate: String, toDate: String): List<SlotDto>
     suspend fun book(slotId: Int, visitType: String): AppointmentDto
     suspend fun myAppointments(): List<AppointmentDto>
+
+    /** Cancels an appointment; a >48h cancellation returns a credit (DEV-050). */
+    suspend fun cancel(appointmentId: Int): CancellationDto
 }
 
 class AppointmentRepositoryImpl(
@@ -66,6 +71,11 @@ class AppointmentRepositoryImpl(
     override suspend fun myAppointments(): List<AppointmentDto> = guarded {
         validated(client.get("$base/appointments") { bearerAuth(requireToken()) })
             .body<List<AppointmentDto>>()
+    }
+
+    override suspend fun cancel(appointmentId: Int): CancellationDto = guarded {
+        validated(client.delete("$base/appointments/$appointmentId") { bearerAuth(requireToken()) })
+            .body<CancellationDto>()
     }
 
     private fun requireToken(): String =
