@@ -90,6 +90,13 @@ kotlin {
             }
         }
 
+        commonTest {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+            }
+        }
+
         androidMain {
             dependencies {
                 implementation(libs.material)
@@ -115,7 +122,7 @@ kotlin {
 
 android {
     compileSdk = 34
-    namespace = "com.base.shared"
+    namespace = "com.meridia.shared"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = 24
@@ -127,11 +134,17 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.0"
     }
+    testOptions {
+        // ViewModels log via android.util.Log; in JVM unit tests the stubbed
+        // android.jar throws "not mocked" RuntimeExceptions. Return defaults so
+        // Logger calls are harmless no-ops under :shared:testDebugUnitTest.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 @Suppress("TooGenericExceptionCaught")
 configure<BuildKonfigExtension> {
-    packageName = "com.base.shared"
+    packageName = "com.meridia.shared"
     val properties = Properties()
 
     val rootProjectDir = project.rootProject.rootDir

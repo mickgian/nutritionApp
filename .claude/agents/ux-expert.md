@@ -92,13 +92,13 @@ Booking payment and meal-box checkout are where money and trust meet. Audit:
 ### 5. Cross-check the implementation
 For every UX claim, cite the actual KMP screen file. Findings without file paths are useless — **always cite.** Paths live under:
 ```
-shared/src/commonMain/kotlin/com/base/shared/screens/...
-shared/src/commonMain/kotlin/com/base/shared/viewModels/...
+shared/src/commonMain/kotlin/com/meridia/shared/screens/...
+shared/src/commonMain/kotlin/com/meridia/shared/viewModels/...
 ```
 Examples:
-- `shared/src/commonMain/kotlin/com/base/shared/screens/booking/BookingSummaryScreen.kt:42` — "riepilogo shows date but not the €90 price"
-- `shared/src/commonMain/kotlin/com/base/shared/screens/mealbox/CheckoutScreen.kt` — "no pickup-slot confirmation before payment"
-- `shared/src/commonMain/kotlin/com/base/shared/viewModels/CancellationViewModel.kt` — "UiState has no Error branch; failed cancel leaves a spinner"
+- `shared/src/commonMain/kotlin/com/meridia/shared/screens/booking/BookingSummaryScreen.kt:42` — "riepilogo shows date but not the €90 price"
+- `shared/src/commonMain/kotlin/com/meridia/shared/screens/mealbox/CheckoutScreen.kt` — "no pickup-slot confirmation before payment"
+- `shared/src/commonMain/kotlin/com/meridia/shared/viewModels/CancellationViewModel.kt` — "UiState has no Error branch; failed cancel leaves a spinner"
 
 If a UX gap is actually a backend contract issue (e.g. credit never returned), note it and route to @ezio.
 
@@ -132,7 +132,7 @@ Always produce a structured report:
 - **What user knows:** ...
 - **What user can do:** ...
 - **What's missing:** ...
-- **Citations:** shared/src/commonMain/kotlin/com/base/shared/screens/.../<File>.kt:line
+- **Citations:** shared/src/commonMain/kotlin/com/meridia/shared/screens/.../<File>.kt:line
 
 ### State 2: <Name>
 ...

@@ -30,15 +30,26 @@ criteria:
 
   - id: UI_PRESENT
     criticality: critical
+    applies_when: "this diff adds or modifies KMP client code under shared/src (screens, viewModels, or network). A backend-only diff (no shared/src files) defers this check ONLY when every new endpoint route path it adds is named verbatim by a tracked consumer task in docs/tasks/DEMO_TO_KMP_TASKS.md; otherwise the criterion applies and the missing/dead endpoint FAILs."
     msg_it: "La schermata/ViewModel KMP esiste, è raggiungibile e chiama l'endpoint"
     check: |
-      If a new endpoint exists under backend/app/api/, the KMP client MUST consume it:
-      - find a repository method in shared/src/commonMain/kotlin/**/network/ that calls the new route path
+      When KMP client code is in scope, the endpoint it targets MUST be consumed end-to-end:
+      - find a repository method in shared/src/commonMain/kotlin/**/network/ that calls the route path
       - find a ViewModel that exposes the state and a @Composable screen that renders it
-      - if no KMP code touches the new endpoint → FAIL (backend shipping ahead of the app is a recurring sin)
+      - if the KMP diff adds a screen/ViewModel that does NOT reach a real endpoint → FAIL
+
+      Phased backend-first delivery (backend-only diff) is deferred, NOT waived, and the link
+      must be VERIFIABLE — a task title is not enough:
+      - list every new route path added in this diff (e.g. GET /api/v1/availability,
+        POST /api/v1/appointments)
+      - for EACH path, grep docs/tasks/DEMO_TO_KMP_TASKS.md for a task that names that exact
+        path in its "Consumes:" line (or body). Match the literal path, not just a keyword.
+      - any new endpoint with NO tracked consumer naming its path → FAIL (dead code); the
+        deferral is only legitimate when the ledger explicitly commits a UI task to that path.
+      The paired UI task is where this criterion is enforced against a live Ktor call.
     evidence_required:
-      - "file:line of the Ktor client call to the new endpoint (route path)"
-      - "route path appears in both the backend router and the KMP repository"
+      - "file:line of the Ktor client call to the endpoint (route path), OR"
+      - "the docs/tasks line naming the exact route path of each deferred endpoint"
 
   - id: NAV_ENTRY
     criticality: high

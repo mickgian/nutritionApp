@@ -36,7 +36,7 @@ loading/empty/error/content states.
 
 ## Epic 0 — Foundations & monorepo
 
-### DEV-001: CI pipeline (GitHub Actions)
+### DEV-001: CI pipeline (GitHub Actions) — ✅ Done
 **Problem:** No automated checks; regressions can merge silently.
 **Solution:** Two workflows — backend (uv + ruff + pytest + coverage) and KMP
 (`./gradlew :shared:allTests` + `:androidApp:assembleDebug`), triggered on PRs.
@@ -44,17 +44,17 @@ loading/empty/error/content states.
 **Files:** `.github/workflows/backend.yml`, `.github/workflows/kmp.yml`.
 **Acceptance:** both workflows green on a no-op PR; coverage reported; PR blocked on failure.
 
-### DEV-002: Design system from demo tokens
+### DEV-002: Design system from demo tokens — ✅ Done
 **Problem:** The demo's visual language (colors, radii, fonts) must live in Compose.
 **Solution:** Encode the demo palette (`--verde #17402F`, `--lime #C9E265`,
 `--panna #F7F8F3`, `--arancio #D96C3B`, etc.), radii, and typography into a Compose
 `MeridiaTheme` (replace/extend `TravelAppTheme.kt`). Provide reusable components:
 `MeridiaButton` (primary/ghost), `Chip`, `Card`, `EyebrowLabel`, `MacroBadge`.
 **Agents:** @livia (primary), @gioia (review). **Change:** MODIFYING.
-**Files:** `shared/src/commonMain/kotlin/com/base/shared/theme/`, reusable components.
+**Files:** `shared/src/commonMain/kotlin/com/meridia/shared/theme/`, reusable components.
 **Acceptance:** theme applied app-wide; components render on all four targets; matches demo.
 
-### DEV-003: Package & app identity rename (`com.base` → `com.meridia`)
+### DEV-003: Package & app identity rename (`com.base` → `com.meridia`) — ✅ Done
 **Problem:** The scaffold uses the template package/app name ("Base", `com.base`).
 **Solution:** Rename package to `com.meridia`, `rootProject.name` to `Meridia`, app
 labels/bundle ids, and the resource package. Do it as one mechanical RESTRUCTURING pass.
@@ -62,7 +62,7 @@ labels/bundle ids, and the resource package. Do it as one mechanical RESTRUCTURI
 **Risks:** broad import churn — verify every target still builds. Do before feature work.
 **Acceptance:** all targets compile; no `com.base` references remain; app shows "Meridia".
 
-### DEV-004: Domain schema design (data model ADR)
+### DEV-004: Domain schema design (data model ADR) — ✅ Done
 **Problem:** Features need a coherent schema before implementation.
 **Solution:** @primo + @egidio design the full ERD (entities table above), keys,
 indexes, ownership columns, and money-as-cents; record it as an ADR.
@@ -74,7 +74,7 @@ indexes, ownership columns, and money-as-cents; record it as an ADR.
 
 ## Epic 1 — Authentication & profile
 
-### DEV-010: Auth backend (register / login / me)
+### DEV-010: Auth backend (register / login / me) — ✅ Done
 **Problem:** The client has login/registration screens but no real backend.
 **Solution:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login` (returns JWT),
 `GET /api/v1/auth/me`. Passwords hashed (bcrypt); tokens via `create_access_token`.
@@ -86,7 +86,7 @@ indexes, ownership columns, and money-as-cents; record it as an ADR.
 **Tests:** register happy, duplicate 409, login ok, bad password 401, `me` requires token.
 **Acceptance:** ≥80% coverage; Italian errors; JWT round-trips; no plaintext passwords.
 
-### DEV-011: Wire KMP auth to the backend
+### DEV-011: Wire KMP auth to the backend — ✅ Done
 **Problem:** `LoginViewModel`/`RegistrationViewModel` target a template API.
 **Solution:** Point the Ktor `AuthRepository` at the FastAPI endpoints; store the JWT
 in `TokenStorage`; attach it to authorized requests; handle 401 → back to login.
@@ -99,7 +99,7 @@ in `TokenStorage`; attach it to authorized requests; handle 401 → back to logi
 
 ## Epic 2 — Consultations & booking
 
-### DEV-020: Availability model & studio management (admin)
+### DEV-020: Availability model & studio management (admin) — ✅ Done
 **Problem:** Booking needs studio-defined open slots (demo admin toggles times).
 **Solution:** `AvailabilitySlot` (date, time, is_open). Admin endpoints
 `GET/PUT /api/v1/admin/availability` (require `admin`). @primo migration.
@@ -107,7 +107,7 @@ in `TokenStorage`; attach it to authorized requests; handle 401 → back to logi
 **Change:** ADDITIVE. **Edge:** past dates rejected; double-booking prevented (409).
 **Acceptance:** admin can open/close slots; non-admin gets 403; migration reversible.
 
-### DEV-021: Appointment booking backend
+### DEV-021: Appointment booking backend — ✅ Done
 **Problem:** Clients must book a prima visita / controllo on an open slot.
 **Solution:** `GET /api/v1/availability?from=&to=` (open slots), `POST /api/v1/appointments`
 (creates a `pending_payment` appointment on an available slot), `GET /api/v1/appointments`
@@ -119,17 +119,18 @@ in `TokenStorage`; attach it to authorized requests; handle 401 → back to logi
 concurrent booking of the same slot (409). **Tests:** happy, 409 taken, 404, isolation, edge.
 **Acceptance:** ≥80% coverage; ownership enforced; slot lifecycle correct.
 
-### DEV-022: Booking wizard (KMP)
+### DEV-022: Booking wizard (KMP) — ✅ Done
 **Problem:** The demo's 3-step wizard (data → riepilogo → pagamento) must be real.
 **Solution:** `BookingViewModel` with a stepper `UiState`; a calendar/slot picker fed
 by `/availability`; a summary step; a payment step (see Epic 7). Confirmation on success.
 **Agents:** @livia (primary), @gioia (UX), @clelia. **Change:** ADDITIVE.
 **Files:** `screens/booking/*`, `viewModels/BookingViewModel.kt`, `network/AppointmentRepository.kt`.
+**Consumes (DEV-021):** `GET /api/v1/availability`, `POST /api/v1/appointments`, `GET /api/v1/appointments`.
 **UX states:** loading slots, empty (no availability), error, per-step validation
 (continue disabled until valid). All copy Italian. **Cancellation terms** shown (48h rule).
 **Acceptance:** end-to-end booking against backend; all states rendered; NAV entry from Consulenza tab.
 
-### DEV-023: Professional profile & reviews
+### DEV-023: Professional profile & reviews — ✅ Done
 **Problem:** The Consulenza screen shows the nutritionist card + reviews.
 **Solution:** `GET /api/v1/professional` (public-ish: bio, credentials, rating,
 reviews). Seed Dott.ssa Serra + demo reviews. **Agents:** @ezio, @livia, @primo.
@@ -139,7 +140,7 @@ reviews). Seed Dott.ssa Serra + demo reviews. **Agents:** @ezio, @livia, @primo.
 
 ## Epic 3 — Nutrition plans & meal box
 
-### DEV-030: Nutrition plan assignment (admin) + client view
+### DEV-030: Nutrition plan assignment (admin) + client view — ✅ Done (backend)
 **Problem:** The box is unlocked only after the studio assigns a plan (persona `new`
 sees a locked state).
 **Solution:** `NutritionPlan` (name, kcal, weeks). Admin: `POST /api/v1/admin/clients/{id}/plan`.
@@ -148,23 +149,25 @@ Client: `GET /api/v1/me/plan`. Persona is derived: no plan → locked box.
 **Edge:** client with no plan → 404/empty (client shows locked state, not an error).
 **Acceptance:** admin assigns; client sees plan or locked state; isolation enforced.
 
-### DEV-031: Meals & weekly box menu
+### DEV-031: Meals & weekly box menu — ✅ Done (backend)
 **Problem:** The box shows 14 meals/week with kcal + macros, per weekday.
 **Solution:** `Meal` (title, emoji/asset, kcal, protein_g, carb_g, fat_g, slot=lunch/dinner)
 and `MealBox`/`BoxItem` linking meals to a plan + week + day. `GET /api/v1/me/box?week=`.
 **Agents:** @primo (schema), @ezio (endpoints), @clelia. **Change:** ADDITIVE.
 **Acceptance:** weekday strip + meals render from backend; macros correct; seed one 4-week cycle.
 
-### DEV-032: Meal detail (KMP)
+### DEV-032: Meal detail (KMP) — ✅ Done
 **Problem:** Tapping a meal opens a detail sheet (nutrition, storage, reheating).
 **Solution:** `GET /api/v1/meals/{id}`; detail screen with valori nutrizionali,
 conservazione, riscaldamento. **Agents:** @livia, @ezio. **Change:** ADDITIVE.
 **Acceptance:** detail renders; reachable from the box; Italian copy; loading/error states.
 
-### DEV-033: Box screen with locked/ordered/orderable states (KMP)
+### DEV-033: Box screen with locked/ordered/orderable states (KMP) — ✅ Done (locked + orderable; ordered state added in DEV-041)
 **Problem:** The box screen has three states by persona (locked / orderable / ordered).
 **Solution:** `BoxViewModel` composing plan + order status; renders locked (no plan),
 orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
+**Consumes (DEV-030):** `GET /api/v1/me/plan` (404 → locked state).
+**Consumes (DEV-031):** `GET /api/v1/me/box?week=` (the weekly 14-meal menu).
 **Agents:** @livia (primary), @gioia. **Change:** ADDITIVE.
 **Acceptance:** all three states correct per backend data; deadline copy; NAV from Box tab.
 
@@ -172,7 +175,7 @@ orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
 
 ## Epic 4 — Meal-box orders & checkout
 
-### DEV-040: Box order backend
+### DEV-040: Box order backend — ✅ Done
 **Problem:** Clients order a single box (€89) or a subscription (€79/box) with a pickup slot.
 **Solution:** `POST /api/v1/orders` (plan=single|subscription, pickup=mattina|pomeriggio),
 `GET /api/v1/orders` (own), status lifecycle `pending_payment → paid → …`. Prices in cents.
@@ -181,17 +184,18 @@ orderable (deadline banner + "Ordina"), or ordered (in-preparation card).
 **Edge:** duplicate active subscription, isolation, invalid plan/pickup. **Tests:** happy,
 403 no-plan, 422, isolation, edge. **Acceptance:** ≥80% coverage; ownership; correct pricing.
 
-### DEV-041: Box checkout (KMP)
+### DEV-041: Box checkout (KMP) — ✅ Done
 **Problem:** The demo's checkout sheet (formula + pickup + pay) must be real.
 **Solution:** `BoxCheckoutViewModel`; formula selector, pickup selector, total, payment
 (Epic 7); success → box marked ordered. **Agents:** @livia, @gioia, @clelia. **Change:** ADDITIVE.
+**Consumes (DEV-040):** `POST /api/v1/orders` (place an order), `GET /api/v1/orders` (own orders).
 **Acceptance:** end-to-end order; states rendered; savings/subscription copy correct.
 
 ---
 
 ## Epic 5 — Profile, cancellation & credits
 
-### DEV-050: Appointment reschedule / cancel + credit
+### DEV-050: Appointment reschedule / cancel + credit — ✅ Done
 **Problem:** >48h before, a client can move or cancel free and receive a 6-month credit.
 **Solution:** `PATCH /api/v1/appointments/{id}` (reschedule), `DELETE /api/v1/appointments/{id}`
 (cancel → issue `Credit` if >48h). `GET /api/v1/me/credits`. Enforce the 48h rule server-side.
@@ -201,17 +205,19 @@ slot → 409. **Edge:** cancel someone else's appt (403/404), credit expiry. **T
 >48h issues credit, <48h no credit, isolation, reschedule conflict.
 **Acceptance:** credit issued correctly; 48h rule enforced server-side (not just UI).
 
-### DEV-051: Profile screen (KMP)
+### DEV-051: Profile screen (KMP) — ✅ Done
 **Problem:** The profilo tab shows appointment, credit, plan, box count, studio info.
 **Solution:** `ProfileViewModel` aggregating `/me/*`; manage/cancel actions with the
 48h messaging. **Agents:** @livia, @gioia. **Change:** ADDITIVE.
+**Consumes (DEV-050):** `PATCH /api/v1/appointments/{id}` (reschedule),
+`DELETE /api/v1/appointments/{id}` (cancel), `GET /api/v1/me/credits` (own credits).
 **Acceptance:** renders real data; cancel flow works; empty states; Italian copy.
 
 ---
 
 ## Epic 6 — Notifications
 
-### DEV-060: Notifications backend + profiling rules
+### DEV-060: Notifications backend + profiling rules — ✅ Done
 **Problem:** The demo lists behavior-profiled notifications (reminders, order deadline,
 box ready, post-consult proposal, win-back, 8-box check-up, birthday, promos).
 **Solution:** `Notification` model + `GET /api/v1/me/notifications`. Generation rules
@@ -220,8 +226,10 @@ service; delivery via push is a later integration (out of scope here — model +
 **Agents:** @primo, @ezio, @clelia, @egidio (rules review). **Change:** ADDITIVE.
 **Acceptance:** notifications listed per user; rules unit-tested; isolation enforced.
 
-### DEV-061: Notifications screen (KMP)
+### DEV-061: Notifications screen (KMP) — ✅ Done
 **Solution:** `NotificationsViewModel` + list screen; unread dot on the tab. Italian copy.
+**Consumes (DEV-060):** `GET /api/v1/me/notifications` (the client's own notifications),
+`POST /api/v1/me/notifications/read` (mark all read, added here to clear the dot).
 **Agents:** @livia, @gioia. **Change:** ADDITIVE.
 **Acceptance:** list renders; empty/error states; NAV dot behavior.
 
@@ -229,7 +237,7 @@ service; delivery via push is a later integration (out of scope here — model +
 
 ## Epic 7 — Payments
 
-### DEV-070: Payment abstraction (backend)
+### DEV-070: Payment abstraction (backend) — ✅ Done
 **Problem:** Appointments and boxes are paid (demo: Apple/Google Pay + card).
 **Solution:** A `PaymentProvider` abstraction that records a `Payment` (amount cents,
 method, provider token, status) and confirms the related appointment/order. **Never**
@@ -239,9 +247,10 @@ interface; wire a real PSP later. **Agents:** @egidio (design + ADR), @ezio, @se
 **Security:** @severino signs off — no PAN stored, idempotent confirmation, amounts server-authoritative.
 **Acceptance:** payment confirms the entity; amounts computed server-side; ADR recorded.
 
-### DEV-071: Payment UI (KMP)
+### DEV-071: Payment UI (KMP) — ✅ Done
 **Solution:** Reusable payment step (Apple/Google Pay + card buttons) used by booking
 and box checkout; success/failure states; receipt-by-email copy. **Agents:** @livia, @gioia.
+**Consumes (DEV-070):** `POST /api/v1/payments` (confirm an appointment or order).
 **Change:** ADDITIVE. **Acceptance:** both flows use it; success/failure rendered; Italian.
 
 ---
@@ -254,6 +263,8 @@ orders, and sends promotions.
 **Solution:** Admin-only screens backed by `admin/*` endpoints (availability from
 DEV-020, plan assignment from DEV-030, `GET /api/v1/admin/orders`, `POST /api/v1/admin/promotions`).
 Gate the whole area behind the `admin` role in the client and enforce on the server.
+**Consumes (DEV-020):** `GET /api/v1/admin/availability`, `PUT /api/v1/admin/availability`.
+**Consumes (DEV-030):** `POST /api/v1/admin/clients/{client_id}/plan`.
 **Agents:** @livia, @ezio, @severino (role enforcement), @gioia, @clelia. **Change:** ADDITIVE.
 **Acceptance:** admin-only access (client + server); each panel action works; isolation/role tested.
 

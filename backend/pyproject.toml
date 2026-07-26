@@ -12,7 +12,8 @@ dependencies = [
     "alembic>=1.14",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
-    "python-jose[cryptography]>=3.3",
+    "email-validator>=2.1",
+    "pyjwt>=2.10",
     # passlib 1.7.x reads bcrypt.__about__, removed in bcrypt>=4.1 — pin for compatibility.
     "passlib[bcrypt]>=1.7",
     "bcrypt>=4.0,<4.1",
@@ -45,7 +46,10 @@ src = ["app", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF"]
-ignore = ["B008"]  # FastAPI Depends() in defaults is idiomatic
+ignore = [
+    "B008",   # FastAPI Depends() in defaults is idiomatic
+    "UP042",  # we standardize on `str, Enum` for SQLModel enums (see ADR-001)
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
@@ -54,6 +58,11 @@ known-first-party = ["app"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
+filterwarnings = [
+    # The dev/test SECRET_KEY is a short throwaway; PyJWT warns HMAC keys < 32 bytes.
+    # Production enforces >= 32 chars via the config guard (see core/config.py).
+    "ignore::jwt.warnings.InsecureKeyLengthWarning",
+]
 
 [tool.coverage.run]
 source = ["app"]

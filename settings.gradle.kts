@@ -33,7 +33,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Base"
+rootProject.name = "Meridia"
 
 include(":webApp")
 include(":shared")

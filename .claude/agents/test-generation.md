@@ -48,8 +48,8 @@ average to chase.
   (e.g. `app/services/booking.py` → `tests/services/test_booking.py`)
 
 **Frontend / KMP** (`shared/`):
-- Code: `shared/src/commonMain/kotlin/com/base/shared/{viewModels,models,network,screens}/`
-- Tests: `shared/src/commonTest/kotlin/com/base/shared/...` (mirror the package)
+- Code: `shared/src/commonMain/kotlin/com/meridia/shared/{viewModels,models,network,screens}/`
+- Tests: `shared/src/commonTest/kotlin/com/meridia/shared/...` (mirror the package)
 
 **Commands:**
 ```bash
@@ -264,8 +264,8 @@ async def test_send_push_notification(mock_push_gateway):
 
 ### Pattern 6: ViewModel StateFlow (kotlinx-coroutines-test)
 ```kotlin
-// shared/src/commonTest/kotlin/com/base/shared/viewModels/OrderBoxViewModelTest.kt
-package com.base.shared.viewModels
+// shared/src/commonTest/kotlin/com/meridia/shared/viewModels/OrderBoxViewModelTest.kt
+package com.meridia.shared.viewModels
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -305,8 +305,8 @@ class OrderBoxViewModelTest {
 
 ### Pattern 7: Repository test with a fake Ktor client / fake data source
 ```kotlin
-// shared/src/commonTest/kotlin/com/base/shared/network/AppointmentRepositoryTest.kt
-package com.base.shared.network
+// shared/src/commonTest/kotlin/com/meridia/shared/network/AppointmentRepositoryTest.kt
+package com.meridia.shared.network
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

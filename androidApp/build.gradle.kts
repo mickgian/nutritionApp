@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.base.android"
+    namespace = "com.meridia.android"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.base.android"
+        applicationId = "com.meridia.android"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
