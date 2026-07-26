@@ -175,9 +175,13 @@ class PrivacyService:
             self.session.delete(payment)
         for credit in self._owned(Credit, value=uid):
             self.session.delete(credit)
-        for box in self._owned(MealBox, value=uid):
-            for item in self.session.exec(select(BoxItem).where(BoxItem.box_id == box.id)).all():
+        boxes = self._owned(MealBox, value=uid)
+        box_ids = [b.id for b in boxes]
+        if box_ids:
+            items = self.session.exec(select(BoxItem).where(BoxItem.box_id.in_(box_ids))).all()
+            for item in items:
                 self.session.delete(item)
+        for box in boxes:
             self.session.delete(box)
         for order in self._owned(Order, value=uid):
             self.session.delete(order)

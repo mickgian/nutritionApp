@@ -86,12 +86,10 @@ class BoxService:
         return created
 
     def _assemble(self, week_index: int, items: list[BoxItem]) -> BoxRead:
-        by_id: dict[int, Meal] = {}
-        for item in items:
-            if item.meal_id not in by_id:
-                meal = self.meals.get_by_id(item.meal_id)
-                if meal is not None:
-                    by_id[item.meal_id] = meal
+        # Batch-load every referenced meal in one query (was one get_by_id per cell).
+        by_id: dict[int, Meal] = {
+            meal.id: meal for meal in self.meals.list_by_ids({item.meal_id for item in items})
+        }
         read_items = [
             BoxItemRead(
                 weekday=item.weekday,
