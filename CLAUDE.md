@@ -175,4 +175,7 @@ returns `VERDICT: PASS | FAIL | ESCALATE`. Run it manually with `/grade-feature`
 - One feature branch / one PR covers backend + KMP changes together (monorepo).
 - Commit messages: imperative, scoped (`DEV-XXX: add appointment booking`); no
   secrets, no internal model identifiers.
+- **Any commit that touches `CLAUDE.md` or `.claude/` must regenerate the config
+  bundle in the same commit:** `./scripts/package-claude-config.sh`. CI
+  (`config-bundle.yml`) fails on a stale `docs/dist/meridia-claude-config.zip`.
 - See `.claude/workflows/git-workflow.md` and `human-in-the-loop-git.md`.

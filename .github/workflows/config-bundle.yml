@@ -1,0 +1,37 @@
+name: Config Bundle
+
+# Fails when docs/dist/meridia-claude-config.zip has drifted from the live
+# Claude Code configuration. The bundle is byte-reproducible, so a stale
+# archive is always a missed `./scripts/package-claude-config.sh` run.
+
+on:
+  pull_request:
+    paths:
+      - "CLAUDE.md"
+      - ".claude/**"
+      - "scripts/package-claude-config.sh"
+      - "docs/dist/meridia-claude-config.zip"
+      - ".github/workflows/config-bundle.yml"
+  push:
+    branches: [master]
+    paths:
+      - "CLAUDE.md"
+      - ".claude/**"
+      - "scripts/package-claude-config.sh"
+      - "docs/dist/meridia-claude-config.zip"
+      - ".github/workflows/config-bundle.yml"
+
+# One in-flight run per ref; a new push cancels the previous run.
+concurrency:
+  group: config-bundle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-bundle:
+    name: Bundle is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the config bundle matches .claude/
+        run: ./scripts/package-claude-config.sh --check
